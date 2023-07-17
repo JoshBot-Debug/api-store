@@ -1,0 +1,63 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`reducer toModel should do an upsert 1`] = `
+Object {
+  "token": Object {
+    "1": Object {
+      "token": "<secret-token>",
+      "user": 1,
+    },
+  },
+  "user": Object {
+    "1": Object {
+      "id": 1,
+      "token": 1,
+      "username": "Jane",
+    },
+    "2": Object {
+      "id": 2,
+      "username": "Mike",
+    },
+  },
+}
+`;
+
+exports[`reducer toModel with more users 1`] = `
+Object {
+  "token": Object {
+    "1": Object {
+      "token": "<secret-token-updated>",
+      "user": 1,
+    },
+  },
+  "user": Object {
+    "1": Object {
+      "id": 1,
+      "token": 1,
+      "username": "Jane updated",
+    },
+    "2": Object {
+      "id": 2,
+      "username": "Mike",
+    },
+  },
+}
+`;
+
+exports[`reducer toModel with one user 1`] = `
+Object {
+  "token": Object {
+    "1": Object {
+      "token": "<secret-token>",
+      "user": 1,
+    },
+  },
+  "user": Object {
+    "1": Object {
+      "id": 1,
+      "token": 1,
+      "username": "Jane",
+    },
+  },
+}
+`;
