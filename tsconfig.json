@@ -1,7 +1,6 @@
 {
   "compilerOptions": {
     "target": "es5",
-    "outDir": "./build",
     "lib": [
       "dom",
       "dom.iterable",
@@ -24,10 +23,5 @@
   },
   "include": [
     "./src"
-  ],
-  "exclude": [
-    "dist",
-    "node_modules",
-    "src/__tests__/**/*.test.tsx",
   ]
 }

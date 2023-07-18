@@ -5,17 +5,6 @@
   "main": "build/index.js",
   "module": "build/index.esm.js",
   "types": "build/index.d.ts",
-  "dependencies": {
-    "@testing-library/jest-dom": "^5.16.5",
-    "@testing-library/react": "^13.4.0",
-    "@testing-library/user-event": "^13.5.0",
-    "@types/jest": "^27.5.2",
-    "@types/node": "^16.18.38",
-    "@types/react": "^18.2.14",
-    "@types/react-dom": "^18.2.6",
-    "react-scripts": "5.0.1",
-    "web-vitals": "^2.1.4"
-  },
   "overrides": {
     "nth-check": "^2.0.1"
   },
@@ -27,9 +16,7 @@
     "eject": "react-scripts eject"
   },
   "files": [
-    "build/*",
-    "src",
-    "!**/__tests__"
+    "build/*"
   ],
   "eslintConfig": {
     "extends": [
@@ -74,10 +61,18 @@
     "@rollup/plugin-commonjs": "^25.0.3",
     "@rollup/plugin-node-resolve": "^15.1.0",
     "@rollup/plugin-typescript": "^11.1.2",
+    "@testing-library/jest-dom": "^5.16.5",
+    "@testing-library/react": "^13.4.0",
+    "@testing-library/user-event": "^13.5.0",
+    "@types/jest": "^27.5.2",
+    "@types/node": "^16.18.38",
+    "@types/react": "^18.2.14",
+    "@types/react-dom": "^18.2.6",
+    "react-scripts": "5.0.1",
+    "web-vitals": "^2.1.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "rollup": "^3.26.3",
-    "rollup-plugin-babel": "^4.4.0",
     "rollup-plugin-commonjs": "^10.1.0",
     "rollup-plugin-dts": "^5.3.0",
     "rollup-plugin-node-resolve": "^5.2.0",

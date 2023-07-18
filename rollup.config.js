@@ -1,4 +1,3 @@
-import babel from 'rollup-plugin-babel';
 import resolve from "@rollup/plugin-node-resolve";
 import commonjs from "@rollup/plugin-commonjs";
 import typescript from "@rollup/plugin-typescript";
@@ -26,11 +25,7 @@ export default [
       resolve(),
       commonjs(),
       typescript({tsconfig: "./tsconfig.json"}),
-      terser(),
-      babel({
-        exclude: 'node_modules/**',
-        presets: ['@babel/preset-env', '@babel/preset-react'],
-      }),
+      terser()
     ],
     external: ["react", "react-dom"],
   },
@@ -38,10 +33,5 @@ export default [
     input: "src/index.ts",
     output: [{ file: "build/index.d.ts", format: "es" }],
     plugins: [dts.default()],
-  },
-  {
-    input: 'src/types.d.ts',
-    output: {file: 'dist/index.d.ts', format: 'es'},
-    plugins: [dts.default()],
-  },
+  }
 ];
