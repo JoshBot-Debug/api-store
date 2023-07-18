@@ -4,6 +4,7 @@ import { fakeFetch, useRenderCount } from "./test-utils";
 import { createTable, createModel } from "../model";
 import { useQuery } from "../useQuery";
 import { act } from "react-dom/test-utils";
+import { useMutation } from "../useMutation";
 
 /**
  * The purpose of this file is to test a real world situation.
@@ -414,83 +415,84 @@ describe("useQuery hook tests", () => {
 describe("useQuery hook component tests", () => {
 
 
-  it("Should rerender only the component where data changes", async () => {
+  function Dob(props: { id: number; }) {
 
-    function Dob(props: { id: number; }) {
+    const store = useQuery<User>({
+      table: "user",
+      get: {
+        where: { id: props.id }
+      },
+      fields: { user: ["dob"] },
+      enabled: false
+    })
 
-      const store = useQuery<User>({
-        table: "user",
-        get: {
-          where: { id: props.id }
-        },
-        fields: { user: ["dob"] },
-        enabled: false
-      })
+    const count = useRenderCount([store])
 
-      const count = useRenderCount(store)
+    return (
+      <>
+        <p data-testid={`count-dob-${props.id}`} >Count({props.id}): {count}</p>
+        <p data-testid="profile-dob">{store.result?.dob}</p>
+      </>
+    )
+  }
 
-      return (
-        <>
-          <p data-testid={`count-dob-${props.id}`} >Count({props.id}): {count}</p>
-          <p data-testid="profile-dob">{store.result?.dob}</p>
-        </>
-      )
-    }
+  function Profile(props: { id: number; }) {
 
-    function Profile(props: { id: number; }) {
+    const store = useQuery<User>({
+      table: "user",
+      get: {
+        where: { id: props.id }
+      },
+      enabled: false,
+      fields: {
+        user: ["username"]
+      }
+    })
 
-      const store = useQuery<User>({
-        table: "user",
-        get: {
-          where: { id: props.id }
-        },
-        enabled: false,
-        fields: {
-          user: ["username"]
-        }
-      })
+    const count = useRenderCount([store])
 
-      const count = useRenderCount(store)
+    return (
+      <>
+        <p data-testid={`count-profile-${props.id}`} >Count({props.id}): {count}</p>
+        <p data-testid="profile-username">{store.result?.username}</p>
+        <Dob id={props.id} />
+      </>
+    )
+  }
 
-      return (
-        <>
-          <p data-testid={`count-profile-${props.id}`} >Count({props.id}): {count}</p>
-          <p data-testid="profile-username">{store.result?.username}</p>
-          <Dob id={props.id} />
-        </>
-      )
-    }
+  const UserComponent = (props: { id: number; }) => {
 
-    const UserComponent = (props: { id: number; }) => {
+    const data = (users as any)[props.id];
 
-      const data = (users as any)[props.id];
+    const fetch = (rand: any) => fakeFetch({ ...data, dob: `<updated-dob> [${rand}]` }, 100)
 
-      const fetch = (rand: any) => fakeFetch({ ...data, dob: `<updated-dob> [${rand}]` }, 100)
+    const store = useQuery<User>({
+      table: "user",
+      get: {
+        result: data,
+        fetch
+      },
+      fields: {
+        user: ["dob"]
+      },
+      enabled: false
+    })
 
-      const store = useQuery({
-        table: "user",
-        get: {
-          result: data,
-          fetch
-        },
-        fields: {
-          user: ["dob"]
-        },
-        enabled: false
-      })
+    const count = useRenderCount([store])
 
-      const count = useRenderCount(store)
+    const handleButtonClick = () => store.refetch(count);
 
-      const handleButtonClick = () => store.refetch(count);
+    return (
+      <div>
+        <p data-testid={`dob-${props.id}`} >{store.result?.dob}</p>
+        <p data-testid={`count-${props.id}`} >Count({props.id}): {count}</p>
+        <button data-testid={`refetch-${props.id}`} onClick={handleButtonClick}>Update {props.id}</button>
+      </div>
+    );
+  }
 
-      return (
-        <div>
-          <p data-testid={`dob-${props.id}`} >{store.result?.dob}</p>
-          <p data-testid={`count-${props.id}`} >Count({props.id}): {count}</p>
-          <button data-testid={`refetch-${props.id}`} onClick={handleButtonClick}>Update {props.id}</button>
-        </div>
-      );
-    }
+
+  it("Using 'result': Should rerender only the component where data changes", async () => {
 
     function UserListComponent() {
 
@@ -502,7 +504,7 @@ describe("useQuery hook component tests", () => {
         }
       })
 
-      const count = useRenderCount(store)
+      const count = useRenderCount([store])
 
       const renderItem = (user: User, index: number) => user && <UserComponent key={index} id={user.id} />
 
@@ -514,7 +516,7 @@ describe("useQuery hook component tests", () => {
       )
     }
 
-    const result = render(
+    render(
       <>
         <UserListComponent />
         <Profile id={12} />
@@ -579,5 +581,206 @@ describe("useQuery hook component tests", () => {
 
   });
 
+  it("Using 'fetch': Should rerender only the component where data changes", async () => {
 
+    function UserListComponent() {
+
+      const fetch = (rand: any) => fakeFetch(Object.values(users), 100)
+
+      const store = useQuery({
+        table: "user",
+        get: { fetch },
+        fields: {
+          user: ["id", "dob", "username"],
+        }
+      })
+
+      const count = useRenderCount([store])
+
+      const renderItem = (user: User, index: number) => user && <UserComponent key={index} id={user.id} />
+
+      return (
+        <>
+          <p data-testid={`isFetching`} >{JSON.stringify(store.isFetching)}</p>
+          <p data-testid={`count-list`} >Count(list): {count}</p>
+          {store.result?.map(renderItem)}
+        </>
+      )
+    }
+
+    render(
+      <>
+        <UserListComponent />
+        <Profile id={12} />
+      </>,
+      { wrapper }
+    )
+
+    const isFetching = screen.getByTestId("isFetching");
+    expect(isFetching.textContent).toBe('true');
+
+    await waitFor(async () => {
+      expect(isFetching.textContent).toBe('false');
+    })
+
+    const countListElement = screen.getByTestId("count-list");
+    const count10Element = screen.getByTestId("count-10");
+    const count11Element = screen.getByTestId("count-11");
+    const count12Element = screen.getByTestId("count-12");
+    const count12Dob = screen.getByTestId("dob-12");
+
+    const countProfileUsername = screen.getByTestId("count-profile-12");
+    const countProfileDob = screen.getByTestId("count-dob-12");
+
+    expect(countListElement.textContent).toBe('Count(list): 2');
+    expect(count10Element.textContent).toBe('Count(10): 0');
+    expect(count11Element.textContent).toBe('Count(11): 0');
+    expect(count12Element.textContent).toBe('Count(12): 0');
+
+    expect(countProfileUsername.textContent).toBe('Count(12): 2');
+    expect(countProfileDob.textContent).toBe('Count(12): 2');
+
+    act(() => screen.getByTestId("refetch-12").click())
+
+    await waitFor(async () => {
+      expect(count12Dob.textContent).toBe('<updated-dob> [0]');
+      expect(countListElement.textContent).toBe('Count(list): 3');
+      expect(count10Element.textContent).toBe('Count(10): 1');
+      expect(count11Element.textContent).toBe('Count(11): 1');
+      expect(count12Element.textContent).toBe('Count(12): 3');
+
+      expect(countProfileUsername.textContent).toBe('Count(12): 2');
+      expect(countProfileDob.textContent).toBe('Count(12): 2');
+    })
+
+    act(() => screen.getByTestId("refetch-12").click())
+    await waitFor(async () => {
+      expect(count12Dob.textContent).toBe('<updated-dob> [3]');
+      expect(countListElement.textContent).toBe('Count(list): 4');
+      expect(count10Element.textContent).toBe('Count(10): 1');
+      expect(count11Element.textContent).toBe('Count(11): 1');
+      expect(count12Element.textContent).toBe('Count(12): 5');
+
+      expect(countProfileUsername.textContent).toBe('Count(12): 2');
+      expect(countProfileDob.textContent).toBe('Count(12): 3');
+    })
+
+    act(() => screen.getByTestId("refetch-12").click())
+    await waitFor(async () => {
+      expect(count12Dob.textContent).toBe('<updated-dob> [5]');
+      expect(countListElement.textContent).toBe('Count(list): 5');
+      expect(count10Element.textContent).toBe('Count(10): 1');
+      expect(count11Element.textContent).toBe('Count(11): 1');
+      expect(count12Element.textContent).toBe('Count(12): 7');
+
+      expect(countProfileUsername.textContent).toBe('Count(12): 2');
+      expect(countProfileDob.textContent).toBe('Count(12): 4');
+    })
+
+  });
+
+
+  it("The parent component should not rerender", async () => {
+
+    function UpdateDob(props: { id: number; }) {
+
+      const data: Partial<User> = {
+        id: props.id,
+        dob: "21-02-1998",
+      }
+
+      const fetch = (rand: any) => fakeFetch({ ...data, dob: `<updated-dob> [${rand}]` }, 100)
+
+      const store = useQuery({
+        table: "user",
+        get: {
+          result: data,
+          fetch,
+          where: { id: props.id }
+        },
+        fields: { user: ["dob"] },
+        enabled: false
+      })
+
+      const count = useRenderCount()
+
+      const handleButtonClick = () => store.refetch(count);
+
+      return (
+        <>
+          <p data-testid={`count-dob`} >Count dob: {count}</p>
+          <p data-testid="dob">{store.result?.dob}</p>
+          <button data-testid={`refetch`} onClick={handleButtonClick}>Update</button>
+        </>
+      )
+    }
+
+    function Parent() {
+
+      const count = useRenderCount()
+
+
+      return (
+        <>
+          <p data-testid={`count-parent`} >Count parent: {count}</p>
+          <UpdateDob id={12} />
+        </>
+      )
+    }
+
+    render(<Parent />, { wrapper })
+
+    const countParent = screen.getByTestId("count-parent");
+    const countDob = screen.getByTestId("count-dob");
+    const refetchDob = screen.getByTestId("refetch");
+
+
+    expect(countParent.textContent).toBe('Count parent: 0');
+    expect(countDob.textContent).toBe('Count dob: 1');
+
+
+    act(() => refetchDob.click())
+
+    await waitFor(async () => {
+      expect(countParent.textContent).toBe('Count parent: 0');
+      expect(countDob.textContent).toBe('Count dob: 3');
+    })
+
+    act(() => refetchDob.click())
+
+    await waitFor(async () => {
+      expect(countParent.textContent).toBe('Count parent: 0');
+      expect(countDob.textContent).toBe('Count dob: 5');
+    })
+
+  });
 });
+
+
+describe("useMutation hook", () => {
+
+
+  it("useMutation should mutate a value.", async () => {
+
+    const data: Partial<User> = {
+      id: 12,
+      dob: "21-02-1998",
+    }
+
+    const fetch = (next: { dob: string; }) => fakeFetch({ ...data, ...next }, 100)
+
+    const { result } = renderHook(() => (
+      useMutation({
+        table: "user",
+        mutate: fetch,
+      })
+    ), { wrapper });
+
+    const response = await act(() => result.current.mutate({ dob: "01-01-2000" }));
+    
+    expect(response).toStrictEqual({ id: 12, dob: "01-01-2000" });
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false))
+  });
+
+})

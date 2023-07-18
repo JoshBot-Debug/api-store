@@ -2,7 +2,7 @@ import { useContext, useEffect, useMemo, useReducer, useState } from "react";
 import { APIStoreContext } from "../Provider";
 import { initialState, reducer } from "./reducer";
 
-export function useQuery<Data>(config: UseAPIStore.Config<Data>): UseAPIStore.UseQueryReturn<Data> {
+export function useQuery<Data>(config: UseAPIStore.UseQueryConfig<Data>): UseAPIStore.UseQueryReturn<Data> {
 
   const {
     table,

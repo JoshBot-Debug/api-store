@@ -1,7 +1,6 @@
 import React from "react";
 import model from "./model";
 import { toModel } from "../reducer";
-import { Model } from "../model";
 
 
 describe("reducer", () => {

@@ -16,7 +16,7 @@ namespace UseAPIStore {
     get: (table: string, where: WhereClause<Data> | null, fields: Record<string, string[]> | null) => Data | null;
   }
 
-  interface Config<Data> {
+  interface UseQueryConfig<Data> {
     table: string;
     get: {
       result?: Data;
@@ -27,18 +27,28 @@ namespace UseAPIStore {
     enabled?: boolean;
   }
 
-  type Op = "eq"
-
   interface UseQueryReturn<Data> {
     result: Data | null;
     isFetching: boolean;
     error: string | null;
     refetch: (...args: any[]) => Promise<Data>;
   }
+
+
+  interface UseMutationConfig<Data, Args extends Array> {
+    table: string;
+    mutate: (...args: Args) => Promise<Data>;
+  }
+
+  interface UseMutationReturn<Data, Args extends Array> {
+    isLoading: boolean;
+    error: string | null;
+    mutate: (...args: Args) => Promise<Data>;
+  }
 }
 
 namespace Model {
-  
+
   interface Model<T = Table.Created> {
     [name: Table.Proto["__name"]]: T;
   }

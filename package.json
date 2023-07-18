@@ -1,5 +1,5 @@
 {
-  "name": "api-store",
+  "name": "@jjmyers/api-store",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -59,5 +59,17 @@
   "devDependencies": {
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
     "@faker-js/faker": "^8.0.2"
-  }
+  },
+  "description": "A react store that uses object relationship to automatically normalize and set in state and get data..",
+  "keywords": [
+    "store",
+    "react-store",
+    "react-api",
+    "api",
+    "react-api-store",
+    "state",
+    "global-state"
+  ],
+  "author": "Joshua Joseph Myers",
+  "license": "ISC"
 }
