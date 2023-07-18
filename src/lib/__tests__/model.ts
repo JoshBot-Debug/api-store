@@ -5,6 +5,11 @@ export interface User {
 	username: string;
 }
 
+const user = createTable("user", {
+	id: "number",
+	username: "string"
+})
+
 const token = createTable("token", {
 	user: "number",
 	token: "string",
@@ -18,16 +23,11 @@ const product = createTable("product", {
 const wishlist = createTable("wishlist", {
 	id: "number",
 })
-	.hasMany(product, "products")
 
 
-const user = createTable("user", {
-	id: "number",
-	username: "string"
-})
-	.hasOne(token, "token")
-	.hasOne(wishlist, "wishlist")
-
+user.hasOne(token, "token")
+user.hasOne(wishlist, "wishlist")
+wishlist.hasMany(product, "products")
 
 const model = createModel([
 	user,
