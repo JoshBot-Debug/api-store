@@ -1,5 +1,6 @@
 import React, { createContext, PropsWithChildren, useMemo, useReducer } from "react";
 import reducer, { prepareInitialState } from "./reducer";
+import { Model, UseAPIStore } from "./types";
 
 type Context = UseAPIStore.Context<{}>;
 

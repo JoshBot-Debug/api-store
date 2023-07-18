@@ -1,4 +1,4 @@
-namespace UseAPIStore {
+export declare namespace UseAPIStore {
 
   type ForeignKey = string | number;
 
@@ -35,19 +35,19 @@ namespace UseAPIStore {
   }
 
 
-  interface UseMutationConfig<Data, Args extends Array> {
+  interface UseMutationConfig<Data, Args extends Array<any>> {
     table: string;
     mutate: (...args: Args) => Promise<Data>;
   }
 
-  interface UseMutationReturn<Data, Args extends Array> {
+  interface UseMutationReturn<Data, Args extends Array<any>> {
     isLoading: boolean;
     error: string | null;
     mutate: (...args: Args) => Promise<Data>;
   }
 }
 
-namespace Model {
+export declare namespace Model {
 
   interface Model<T = Table.Created> {
     [name: Table.Proto["__name"]]: T;

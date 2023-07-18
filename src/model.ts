@@ -1,3 +1,4 @@
+import { Model } from "./types";
 
 function has(model: Model.Table.Created): Model.Table.Relationship.Has {
   const {

@@ -1,3 +1,5 @@
+import { Model } from "./types";
+
 interface State {
 	cache: { [table: string]: { [pk: string]: Model.Table.Created } },
 }

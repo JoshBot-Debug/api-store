@@ -1,15 +1,15 @@
+import babel from 'rollup-plugin-babel';
 import resolve from "@rollup/plugin-node-resolve";
 import commonjs from "@rollup/plugin-commonjs";
 import typescript from "@rollup/plugin-typescript";
-import dts from "rollup-plugin-dts";
 import { terser } from "rollup-plugin-terser";
-import peerDepsExternal from "rollup-plugin-peer-deps-external";
+import dts from "rollup-plugin-dts";
 
 const packageJson = require("./package.json");
 
 export default [
   {
-    input: "src/lib/index.ts",
+    input: "src/index.ts",
     output: [
       {
         file: packageJson.main,
@@ -23,17 +23,25 @@ export default [
       },
     ],
     plugins: [
-      peerDepsExternal(),
       resolve(),
       commonjs(),
-      typescript({ tsconfig: "./tsconfig.json" }),
+      typescript({tsconfig: "./tsconfig.json"}),
       terser(),
+      babel({
+        exclude: 'node_modules/**',
+        presets: ['@babel/preset-env', '@babel/preset-react'],
+      }),
     ],
     external: ["react", "react-dom"],
   },
   {
-    input: "src/lib/index.ts",
-    output: [{ file: "dist/types.d.ts", format: "es" }],
+    input: "src/index.ts",
+    output: [{ file: "build/index.d.ts", format: "es" }],
+    plugins: [dts.default()],
+  },
+  {
+    input: 'src/types.d.ts',
+    output: {file: 'dist/index.d.ts', format: 'es'},
     plugins: [dts.default()],
   },
 ];

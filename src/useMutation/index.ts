@@ -1,6 +1,7 @@
 import { useContext, useMemo, useReducer } from "react";
 import { APIStoreContext } from "../APIStore";
 import { initialState, reducer } from "./reducer";
+import { UseAPIStore } from "../types";
 
 export function useMutation<Data, Args extends Array<any>>(config: UseAPIStore.UseMutationConfig<Data, Args>): UseAPIStore.UseMutationReturn<Data, Args> {
 
