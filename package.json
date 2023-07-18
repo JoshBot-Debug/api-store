@@ -2,6 +2,9 @@
   "name": "@jjmyers/api-store",
   "version": "0.1.0",
   "private": true,
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "types": "dist/index.d.ts",
   "dependencies": {
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
@@ -16,9 +19,13 @@
     "typescript": "^4.9.5",
     "web-vitals": "^2.1.4"
   },
+  "overrides": {
+    "nth-check": "^2.0.1"
+  },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
+    "copy-ts": "cp src/lib/types.d.ts dist/index.d.ts",
+    "build": "rollup -c --bundleConfigAsCjs && npm run copy-ts",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
@@ -58,7 +65,15 @@
   },
   "devDependencies": {
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
-    "@faker-js/faker": "^8.0.2"
+    "@faker-js/faker": "^8.0.2",
+    "@rollup/plugin-commonjs": "^25.0.3",
+    "@rollup/plugin-node-resolve": "^15.1.0",
+    "@rollup/plugin-typescript": "^11.1.2",
+    "rollup": "^3.26.3",
+    "rollup-plugin-dts": "^5.3.0",
+    "rollup-plugin-peer-deps-external": "^2.2.4",
+    "rollup-plugin-terser": "^7.0.2",
+    "ts-loader": "^9.4.4"
   },
   "description": "A react store that uses object relationship to automatically normalize and set in state and get data..",
   "keywords": [

@@ -1,5 +1,5 @@
 import { render, renderHook, screen, waitFor } from "@testing-library/react";
-import APIStore from "../Provider";
+import APIStore from "../APIStore";
 import { fakeFetch, useRenderCount } from "./test-utils";
 import { createTable, createModel } from "../model";
 import { useQuery } from "../useQuery";
