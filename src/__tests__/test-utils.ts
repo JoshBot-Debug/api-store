@@ -15,7 +15,7 @@ export const useRenderCount = (dep?: any[]) => {
 
 type PaginationResponse<T> = {
   data: T[];
-  nextParams: { createdAt: number; otherInformation: string } | null
+  nextParams: { createdAt: string; } | null
 }
 
 /**
@@ -25,13 +25,17 @@ type PaginationResponse<T> = {
  */
 export const fakePaginatingFetch = <T>(result: T[], nextParams: PaginationResponse<T>["nextParams"], pageCount: number = 2, delay: number = 100) => {
   return new Promise<PaginationResponse<T>>(resolve => {
-    const pages: PaginationResponse<T>[] = [];
+    const pages: {[createdAt: string]: PaginationResponse<T>} = {};
     for (let i = 0; i < result.length; i += pageCount) {
-      pages.push({
+      const createdAt = `2023-06-20T17:02:23.${i + 1}00Z`;
+      pages[createdAt] = {
         data: result.slice(i, i + pageCount),
-        nextParams: result.length - 1 === i ? null : { createdAt: i + 1, otherInformation: "other next params, could be anything..." }
-      });
+        nextParams: result.length - 1 === i ? null : {
+          createdAt: `2023-06-20T17:02:23.${pageCount + 1}00Z`
+        }
+      };
     }
-    setTimeout(() => resolve(pages[nextParams?.createdAt ?? 0]), delay)
+    const p = nextParams?.createdAt ? nextParams.createdAt : Object.keys(pages)[0]
+    setTimeout(() => resolve(pages[p]), delay)
   })
 }

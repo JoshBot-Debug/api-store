@@ -40,13 +40,15 @@ export function useQuery<Result, Data>(config: UseAPIStore.UseQueryConfig<Result
       if (_result) {
         const data = getData ? getData(_result as Result) : _result as Data
         context.upsert({ table, data });
-        setWhere(_where ?? data);
+        const where = _where ?? data;
+        setWhere(Array.isArray(where) ? context.filterUnique(table, where) : where);
       }
       if (enabled && fetch) {
         dispatch({ type: "isLoading", payload: true });
         const fetchResult = await fetch();
-        const data = getData ? getData(fetchResult as Result) : fetchResult as Data
-        setWhere(_where ?? data)
+        const data = getData ? getData(fetchResult as Result) : fetchResult as Data;
+        const where = _where ?? data;
+        setWhere(Array.isArray(where) ? context.filterUnique(table, where) : where);
         context.upsert({ table, data });
       }
     }
@@ -65,7 +67,8 @@ export function useQuery<Result, Data>(config: UseAPIStore.UseQueryConfig<Result
       dispatch({ type: "isFetching", payload: true });
       const fetchResult = await fetch(...args);
       const data = getData ? getData(fetchResult as Result) : fetchResult as Data
-      setWhere(_where ?? data)
+      const where = _where ?? data;
+      setWhere(Array.isArray(where) ? context.filterUnique(table, where) : where);
       context.upsert({ table, data });
       return data;
     }

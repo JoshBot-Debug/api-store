@@ -404,9 +404,26 @@ describe("useQuery hook tests", () => {
     const { result } = renderHook(() => (
       useQuery({
         table: "user",
-        get: { result: Object.values(users) }
+        get: { result: Object.values(users) },
       })
     ), { wrapper });
+
+    expect(result.current.result).toStrictEqual(Object.values(users));
+  });
+
+
+  it("useQuery result is an array, where has duplicate values.", async () => {
+
+    const { result } = renderHook(() => (
+      useQuery({
+        table: "user",
+        get: {
+          result: Object.values(users),
+          where: [...Object.values(users), ...Object.values(users)]
+        },
+      })
+    ), { wrapper });
+
 
     expect(result.current.result).toStrictEqual(Object.values(users));
   });
@@ -697,7 +714,6 @@ describe("useQuery hook component tests", () => {
 
   });
 
-
   it("The parent component should not rerender", async () => {
 
     function UpdateDob(props: { id: number; }) {
@@ -808,7 +824,7 @@ describe("useMutation hook", () => {
 describe("useInfiniteQuery hook", () => {
 
 
-  it("Pagination test", async () => {
+  it("Pagination test 1", async () => {
 
     function UserListComponent() {
 
@@ -826,10 +842,12 @@ describe("useInfiniteQuery hook", () => {
       })
 
       const getNextPage = () => store.fetchNextPage()
+      const refetch = () => store.refetch()
 
       return (
         <>
           <p data-testid={`result`}>{JSON.stringify(store.result?.length)}</p>
+          <button data-testid={`refetch`} onClick={refetch}></button>
           <button data-testid={`fetchNextPage`} onClick={getNextPage}></button>
         </>
       )
@@ -837,6 +855,7 @@ describe("useInfiniteQuery hook", () => {
 
     render(<UserListComponent />, { wrapper })
 
+    const refetch = screen.getByTestId("refetch");
     const fetchNextPage = screen.getByTestId("fetchNextPage");
     const result = screen.getByTestId("result");
 
@@ -848,6 +867,60 @@ describe("useInfiniteQuery hook", () => {
 
     await waitFor(async () => {
       expect(result.textContent).toBe('3');
+    })
+
+    act(() => refetch.click())
+
+    await waitFor(async () => {
+      expect(result.textContent).toBe('3');
+    })
+  });
+
+  it("Pagination test 2", async () => {
+
+    function UserListComponent() {
+
+      const fetch = async (nextParams: any) => {
+        const result = await fakePaginatingFetch(Object.values(users), nextParams)
+        return result
+      }
+
+      const store = useInfiniteQuery({
+        table: "user",
+        get: { fetch: next => fetch(next) },
+        getData: (result) => result.data,
+        getNextPageParams: (result) => result.nextParams,
+        getNextPageKey: (result) => !result.nextParams ? null : result.nextParams.createdAt.toString(),
+        fields: {
+          user: ["id", "dob", "username"],
+        }
+      })
+
+      const getNextPage = () => store.fetchNextPage()
+      const refetch = () => store.refetch()
+
+      return (
+        <>
+          <p data-testid={`result`}>{JSON.stringify(store.result?.length)}</p>
+          <button data-testid={`refetch`} onClick={refetch}></button>
+          <button data-testid={`fetchNextPage`} onClick={getNextPage}></button>
+        </>
+      )
+    }
+
+    render(<UserListComponent />, { wrapper })
+
+    const refetch = screen.getByTestId("refetch");
+    const result = screen.getByTestId("result");
+
+    await waitFor(async () => {
+      expect(result.textContent).toBe('2');
+    })
+
+    act(() => refetch.click())
+
+    await waitFor(async () => {
+      expect(result.textContent).toBe('2');
     })
   });
 

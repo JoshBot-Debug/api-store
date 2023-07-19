@@ -90,9 +90,23 @@ export function createModel(tables: Model.Table.Created[]) {
     }, {} as Model.Model)
 
   Object.setPrototypeOf(model, <Model.Proto>{
+    filterUnique(table, data) {
+      const schema = this[table] as Model.Table.Proto;
+      return data
+        .reduce((result, current: any) => {
+          const pk = current[schema.__pk];
+          if (pk === undefined) throw new Error("If you want to filter out unique records, you must pass a primary key.")
+          if (result.pks.includes(pk)) return result;
+          return {
+            pks: [...result.pks, pk],
+            clauses: [...result.clauses, current]
+          }
+        }, { pks: [], clauses: [] } as { pks: any[]; clauses: any[] })
+        .clauses
+    },
     get(table, normalizedData, where, fields) {
 
-      if (Array.isArray(where)) return where.map(_where => this.get(table, normalizedData, _where, fields));
+      if (Array.isArray(where)) return where.map((_where: any) => this.get(table, normalizedData, _where, fields));
 
       const schema = this[table] as Model.Table.Proto;
       const records = normalizedData[table];
@@ -113,7 +127,7 @@ export function createModel(tables: Model.Table.Created[]) {
         // If this field is a foreigner
         if (isForeigner) {
 
-          if(selectedFields && (fields && !fields[cKey])) continue;
+          if (selectedFields && (fields && !fields[cKey])) continue;
 
           const next = this.get(
             (schema.__relationship[cKey] as Model.Table.Relationship.Proto).__name,
@@ -124,14 +138,6 @@ export function createModel(tables: Model.Table.Created[]) {
 
           if (next) {
             if (!result) result = {};
-
-            // Was this
-            // result[cKey] = {
-            //   ...(result[cKey] ?? {}),
-            //   ...next
-            // };
-            
-            // THis fixes the converting array to object problem
             result[cKey] = next;
           }
         }
@@ -168,9 +174,9 @@ export function createModel(tables: Model.Table.Created[]) {
           for (let i = 0; i < selectedFields.length; i++) {
             const field = selectedFields[i];
             const value = row[field];
-            if(value !== undefined) result[field] = value;
+            if (value !== undefined) result[field] = value;
           }
- 
+
         }
 
 

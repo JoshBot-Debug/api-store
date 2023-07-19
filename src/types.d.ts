@@ -14,6 +14,7 @@ export declare namespace UseAPIStore {
     cache: {};
     upsert: (params: { table: string; data: Data | Data[]; }) => void;
     get: (table: string, where: WhereClause<Data> | null, fields: Record<string, string[]> | null) => Data | null;
+    filterUnique: <Data>(table: string, data: Data[]) => Data[]
   }
 
   interface UseInfiniteQueryConfig<Result, Data, NextPageParams, NextPageKey extends string> {
@@ -87,6 +88,7 @@ export declare namespace Model {
       where: Record<string, any> | Record<string, any>[],
       fields: Record<string, string[]> | null
     ) => T | null;
+    filterUnique: <Data>(table: string, data: Data[]) => Data[]
   }
 
   type Proto<T = Table.Created> = Model<T> & Prototype<T>;

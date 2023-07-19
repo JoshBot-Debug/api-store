@@ -44,7 +44,7 @@ export function useInfiniteQuery<
     const nextPageKey = getNextPageKey(fetchResult);
     if (!nextPageParams || !nextPageKey) dispatch({ type: "hasNextPage", payload: false });
     dispatch({ type: "nextPageParams", payload: { nextPageKey, nextPageParams } });
-    setWhere(prev => (!prev ? data : [...prev, ...data]))
+    setWhere(prev => context.filterUnique(table, (!prev ? data : [...prev, ...data])))
     context.upsert({ table, data });
     return data;
   }
@@ -54,7 +54,7 @@ export function useInfiniteQuery<
       if (_result) {
         const data = getData(_result);
         context.upsert({ table, data });
-        setWhere(data);
+        setWhere(context.filterUnique(table, data));
       }
       if (enabled) {
         await fetchSetAndGet();
