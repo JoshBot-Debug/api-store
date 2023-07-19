@@ -1,11 +1,12 @@
 import React from "react";
 import { render, renderHook, screen, waitFor } from "@testing-library/react";
 import APIStore from "../APIStore";
-import { fakeFetch, useRenderCount } from "./test-utils";
+import { fakeFetch, fakePaginatingFetch, useRenderCount } from "./test-utils";
 import { createTable, createModel } from "../model";
 import { useQuery } from "../useQuery";
 import { act } from "react-dom/test-utils";
 import { useMutation } from "../useMutation";
+import { useInfiniteQuery } from "../useInfiniteQuery";
 
 /**
  * The purpose of this file is to test a real world situation.
@@ -410,6 +411,21 @@ describe("useQuery hook tests", () => {
   });
 
 
+  it("useQuery getData function test.", async () => {
+
+    const { result } = renderHook(() => (
+      useQuery({
+        table: "user",
+        get: {
+          result: { data: Object.values(users) },
+        },
+        getData: r => r.data
+      })
+    ), { wrapper });
+
+    expect(result.current.result).toStrictEqual(Object.values(users));
+  });
+
 });
 
 
@@ -418,7 +434,7 @@ describe("useQuery hook component tests", () => {
 
   function Dob(props: { id: number; }) {
 
-    const store = useQuery<User>({
+    const store = useQuery<User, User>({
       table: "user",
       get: {
         where: { id: props.id }
@@ -439,7 +455,7 @@ describe("useQuery hook component tests", () => {
 
   function Profile(props: { id: number; }) {
 
-    const store = useQuery<User>({
+    const store = useQuery<User, User>({
       table: "user",
       get: {
         where: { id: props.id }
@@ -467,7 +483,7 @@ describe("useQuery hook component tests", () => {
 
     const fetch = (rand: any) => fakeFetch({ ...data, dob: `<updated-dob> [${rand}]` }, 100)
 
-    const store = useQuery<User>({
+    const store = useQuery({
       table: "user",
       get: {
         result: data,
@@ -699,6 +715,7 @@ describe("useQuery hook component tests", () => {
           fetch,
           where: { id: props.id }
         },
+        getData: res => res,
         fields: { user: ["dob"] },
         enabled: false
       })
@@ -778,10 +795,59 @@ describe("useMutation hook", () => {
     ), { wrapper });
 
     const response = await act(() => result.current.mutate({ dob: "01-01-2000" }));
-    
+
     expect(response).toStrictEqual({ id: 12, dob: "01-01-2000" });
 
     await waitFor(() => expect(result.current.isLoading).toBe(false))
+  });
+
+})
+
+
+describe("useInfiniteQuery hook", () => {
+
+
+  it("Pagination test", async () => {
+
+    function UserListComponent() {
+
+      const fetch = async (nextParams: any) => fakePaginatingFetch(Object.values(users), nextParams)
+
+      const store = useInfiniteQuery({
+        table: "user",
+        get: { fetch },
+        getData: (result) => result.data,
+        getNextPageParams: (result) => result.nextParams,
+        getNextPageKey: (result) => !result.nextParams ? null : result.nextParams.createdAt.toString(),
+        fields: {
+          user: ["id", "dob", "username"],
+        }
+      })
+
+      const getNextPage = () => store.fetchNextPage()
+
+      return (
+        <>
+          <p data-testid={`result`}>{JSON.stringify(store.result?.length)}</p>
+          <button data-testid={`fetchNextPage`} onClick={getNextPage}></button>
+        </>
+      )
+    }
+
+    render(<UserListComponent />, { wrapper })
+
+    const fetchNextPage = screen.getByTestId("fetchNextPage");
+    const result = screen.getByTestId("result");
+
+    await waitFor(async () => {
+      expect(result.textContent).toBe('2');
+    })
+
+    act(() => fetchNextPage.click())
+
+    await waitFor(async () => {
+      expect(result.textContent).toBe('3');
+    })
   });
 
 })

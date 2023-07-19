@@ -16,13 +16,37 @@ export declare namespace UseAPIStore {
     get: (table: string, where: WhereClause<Data> | null, fields: Record<string, string[]> | null) => Data | null;
   }
 
-  interface UseQueryConfig<Data> {
+  interface UseInfiniteQueryConfig<Result, Data, NextPageParams, NextPageKey extends string> {
     table: string;
     get: {
-      result?: Data;
-      fetch?: (...args: any[]) => Promise<Data>;
-      where?: WhereClause<Data>;
-    },
+      result?: Result;
+      fetch?: (nextParams?: NextPageParams) => Promise<Result>;
+    };
+    getData: (result: Result) => Data[];
+    getNextPageParams: (result: Result) => NextPageParams | null;
+    getNextPageKey: (result: Result) => NextPageKey | null;
+    fields?: Record<string, string[]>;
+    enabled?: boolean;
+  }
+
+  interface UseInfiniteQueryReturn<Data, NextPageParams> {
+    result: Data[];
+    isFetching: boolean;
+    error: string | null;
+    refetch: (nextParams?: NextPageParams) => Promise<Data[]>;
+    fetchNextPage: () => Promise<Data[] | any[]>;
+  }
+
+  type InferData<Result, Data> = Data extends undefined ? Result : Data;
+
+  interface UseQueryConfig<Result, Data = undefined> {
+    table: string;
+    get: {
+      result?: InferData<Data, Result>;
+      fetch?: (...args: any[]) => Promise<InferData<Data, Result>>;
+      where?: WhereClause<InferData<Result, Data>>;
+    };
+    getData?: (result: Result) => Data;
     fields?: Record<string, string[]>;
     enabled?: boolean;
   }
