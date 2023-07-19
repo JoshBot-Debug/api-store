@@ -7,6 +7,7 @@ import { useQuery } from "../useQuery";
 import { act } from "react-dom/test-utils";
 import { useMutation } from "../useMutation";
 import { useInfiniteQuery } from "../useInfiniteQuery";
+import { UseAPIStore } from "../types";
 
 /**
  * The purpose of this file is to test a real world situation.
@@ -815,7 +816,7 @@ describe("useInfiniteQuery hook", () => {
 
       const store = useInfiniteQuery({
         table: "user",
-        get: { fetch },
+        get: { fetch: next => fetch(next) },
         getData: (result) => result.data,
         getNextPageParams: (result) => result.nextParams,
         getNextPageKey: (result) => !result.nextParams ? null : result.nextParams.createdAt.toString(),

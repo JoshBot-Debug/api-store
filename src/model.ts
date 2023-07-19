@@ -125,10 +125,14 @@ export function createModel(tables: Model.Table.Created[]) {
           if (next) {
             if (!result) result = {};
 
-            result[cKey] = {
-              ...(result[cKey] ?? {}),
-              ...next
-            };
+            // Was this
+            // result[cKey] = {
+            //   ...(result[cKey] ?? {}),
+            //   ...next
+            // };
+            
+            // THis fixes the converting array to object problem
+            result[cKey] = next;
           }
         }
 

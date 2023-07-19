@@ -8,7 +8,7 @@ export function useInfiniteQuery<
   Data,
   NextPageParams,
   NextPageKey extends string
->(config: UseAPIStore.UseInfiniteQueryConfig<Result, Data, NextPageParams, NextPageKey>): UseAPIStore.UseInfiniteQueryReturn<Data, NextPageParams> {
+>(config: UseAPIStore.UseInfiniteQueryConfig<Result, Data, NextPageParams, NextPageKey>): UseAPIStore.UseInfiniteQueryReturn<Data, NextPageParams, NextPageKey> {
 
   const {
     table,

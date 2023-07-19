@@ -1,3 +1,4 @@
+import { UseAPIStore } from "../types";
 import { User } from "./model";
 
 export const DATA = {
