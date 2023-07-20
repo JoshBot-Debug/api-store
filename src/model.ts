@@ -89,6 +89,26 @@ export function createModel(tables: Model.Table.Created[]) {
       return { ...r, [t.__name]: t }
     }, {} as Model.Model)
 
+  const cleanWhereClause = (self: Model.Model, next: any, table: string) => {
+    if (Array.isArray(next)) {
+      next = next.map(n => cleanWhereClause(self, n, table))
+      return next
+    }
+    const schema = self[table] as Model.Table.Proto;
+    const relations = Object.keys(schema.__relationship).filter(r => r !== "__alias");
+    const keys = Object.keys(next);
+    for (let i = 0; i < keys.length; i++) {
+      const key = keys[i];
+      if (key !== schema.__pk && !relations.includes(key)) {
+        delete next[key];
+        continue;
+      }
+      if (key === schema.__pk) continue;
+      next[key] = cleanWhereClause(self, next[key], schema.__relationship.__alias[key])
+    }
+    return next
+  }
+
   Object.setPrototypeOf(model, <Model.Proto>{
     filterUnique(table, data) {
       const schema = this[table] as Model.Table.Proto;
@@ -97,25 +117,67 @@ export function createModel(tables: Model.Table.Created[]) {
           const pk = current[schema.__pk];
           if (pk === undefined) throw new Error("If you want to filter out unique records, you must pass a primary key.")
           if (result.pks.includes(pk)) return result;
+          const clean = cleanWhereClause(this, { ...current }, table)
           return {
             pks: [...result.pks, pk],
-            clauses: [...result.clauses, current]
+            clauses: [...result.clauses, clean]
           }
         }, { pks: [], clauses: [] } as { pks: any[]; clauses: any[] })
         .clauses
     },
-    get(table, normalizedData, where, fields) {
+    get(table, normalizedData, where, fields, isRecursive = false) {
 
-      if (Array.isArray(where)) return where.map((_where: any) => this.get(table, normalizedData, _where, fields));
+      if (Array.isArray(where)) {
+        const result = [];
+        for (let i = 0; i < where.length; i++) {
+          const record = this.get(table, normalizedData, where[i], fields, isRecursive);
+          if(!record) return []
+          result.push(record)
+        }
+        return result;
+      }
 
       const schema = this[table] as Model.Table.Proto;
       const records = normalizedData[table];
 
       let result: Record<string, any> | null = null;
 
-      const clauses = Object.entries(where);
+      let clauses = Object.entries(where);
 
       const hasPk = clauses.find(([k]) => k === schema.__pk);
+
+      if (hasPk) {
+        const relations = Object.keys(schema.__relationship).filter(r => r !== "__alias");
+        const filteredData = clauses.filter(([key]) => key === schema.__pk || relations.includes(key));
+        clauses = filteredData.sort((a, b) => {
+          if (a[0] === schema.__pk) {
+            return -1;
+          } else if (b[0] === schema.__pk) {
+            return 1;
+          } else {
+            return 0;
+          }
+        });
+
+        if(!isRecursive) {
+          const [pk, value] = clauses[0];
+
+          const isPkForeigner = !!schema.__relationship[pk]?.__isForeign;
+          if(isPkForeigner) {
+            const fkTableName = (schema.__relationship[schema.__pk] as Model.Table.Relationship.Proto).__name;
+            const fkSchema = this[fkTableName] as Model.Table.Proto;
+            
+            if(!normalizedData[fkSchema.__name][value]) {
+              if(typeof value === "object") {
+                if(!normalizedData[fkSchema.__name][value[fkSchema.__pk]]) return null;
+              }
+              if(typeof value !== "object") return null;
+            }
+          }
+          
+          if(!isPkForeigner && !records[value]) return null;
+        }
+      }
 
       for (let ci = 0; ci < clauses.length; ci++) {
         const [cKey, cValue] = clauses[ci];
@@ -133,7 +195,8 @@ export function createModel(tables: Model.Table.Created[]) {
             (schema.__relationship[cKey] as Model.Table.Relationship.Proto).__name,
             normalizedData,
             cValue,
-            fields
+            fields,
+            true
           );
 
           if (next) {

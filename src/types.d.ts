@@ -21,7 +21,7 @@ export declare namespace UseAPIStore {
     table: string;
     get: {
       result?: Result;
-      fetch?: (nextParams?: NextPageParams) => Promise<Result>;
+      fetch?: (nextParams?: NextPageParams | null) => Promise<Result>;
     };
     getData: (result: Result) => Data[];
     getNextPageParams: (result: Result) => NextPageParams | null | undefined;
@@ -86,7 +86,8 @@ export declare namespace Model {
       table: string,
       normalizedData: Record<string, Record<string, any>>,
       where: Record<string, any> | Record<string, any>[],
-      fields: Record<string, string[]> | null
+      fields: Record<string, string[]> | null,
+      isRecursive?: boolean,
     ) => T | null;
     filterUnique: <Data>(table: string, data: Data[]) => Data[]
   }

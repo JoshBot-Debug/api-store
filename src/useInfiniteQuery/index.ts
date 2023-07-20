@@ -35,9 +35,12 @@ export function useInfiniteQuery<
 
   useEffect(() => { onMount(); }, []);
 
-  async function fetchSetAndGet(nextParams?: NextPageParams) {
-    if (!fetch) throw new Error("You cannot call refetch without passing a fetch function to the hook.");
-    if (!state.hasNextPage) return [];
+  async function fetchSetAndGet(nextParams?: NextPageParams | null) {
+    if (!fetch) throw new Error("You cannot use useInfiniteQuery without passing a fetch function to the hook.");
+    if (!state.hasNextPage) {
+      dispatch({ type: "hasNextPage", payload: false });
+      return [];
+    }
     const fetchResult = await fetch(nextParams);
     const data = getData(fetchResult);
     const nextPageParams = getNextPageParams(fetchResult);
@@ -57,6 +60,7 @@ export function useInfiniteQuery<
         setWhere(context.filterUnique(table, data));
       }
       if (enabled) {
+        dispatch({ type: "isLoading", payload: true });
         await fetchSetAndGet();
       }
     }
@@ -88,10 +92,6 @@ export function useInfiniteQuery<
     try {
       dispatch({ type: "isFetching", payload: true });
       const nextParams = state.nextPageParams[state.nextPageParams.length - 1]?.nextPageParams;
-      if (!nextParams) {
-        dispatch({ type: "hasNextPage", payload: false });
-        return [];
-      }
       return await fetchSetAndGet(nextParams);
     }
     catch (error) {
