@@ -2,7 +2,7 @@ interface State<NextPageParams, NextPageKey> {
   hasNextPage: boolean;
   isLoading: boolean;
   isFetching: boolean;
-  nextPageParams: { nextPageKey: NextPageKey | null, nextPageParams: NextPageParams | null }[];
+  nextPageParams: { nextPageKey?: NextPageKey | null, nextPageParams?: NextPageParams | null }[];
   error: string | null;
 }
 

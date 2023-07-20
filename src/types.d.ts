@@ -24,8 +24,8 @@ export declare namespace UseAPIStore {
       fetch?: (nextParams?: NextPageParams) => Promise<Result>;
     };
     getData: (result: Result) => Data[];
-    getNextPageParams: (result: Result) => NextPageParams | null;
-    getNextPageKey: (result: Result) => NextPageKey | null;
+    getNextPageParams: (result: Result) => NextPageParams | null | undefined;
+    getNextPageKey: (result: Result) => NextPageKey | null | undefined;
     fields?: Record<string, string[]>;
     enabled?: boolean;
   }

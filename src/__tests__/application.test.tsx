@@ -835,7 +835,7 @@ describe("useInfiniteQuery hook", () => {
         get: { fetch: next => fetch(next) },
         getData: (result) => result.data,
         getNextPageParams: (result) => result.nextParams,
-        getNextPageKey: (result) => !result.nextParams ? null : result.nextParams.createdAt.toString(),
+        getNextPageKey: (result) => result.nextParams?.createdAt.toString(),
         fields: {
           user: ["id", "dob", "username"],
         }
