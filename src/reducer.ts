@@ -42,6 +42,8 @@ export function toModel(params: {
 
 	const parentSchema = model[initialTable];
 
+  if(!parentSchema?.__pk) throw new Error(`No schema found. The table "${initialTable}" does not exist.`);
+
 	for (let i = 0; i < partialPayloads.length; i++) {
 
 		const _payload = partialPayloads[i];
@@ -64,6 +66,8 @@ export function toModel(params: {
 			if (!Array.isArray(child) && hasManyChildren) throw new Error(`"${foreignerAs}" under "${parentSchema.__name}" was as object, we expected an array. Did you mean to use hasOne?`);
 
 			const childSchema = model[foreignerName];
+
+      if(!childSchema?.__pk) throw new Error(`No schema found. The table "${foreignerName}" as "${foreignerAs}" does not exist.`);
 
 			table[foreignerAs] = hasManyChildren
 				? child.map((c: any) => c[childSchema.__pk])
