@@ -38,7 +38,7 @@ export declare namespace UseAPIStore {
     refetch: (nextParams?: NextPageParams) => Promise<Data[]>;
     fetchNextPage: () => Promise<Data[] | any[]>;
     hasNextPage: boolean;
-    nextPageParams: { nextPageKey: NextPageKey | null, nextPageParams: NextPageParams | null }[];
+    nextPageParams: { nextPageKey?: NextPageKey | null, nextPageParams?: NextPageParams | null }[];
   }
 
   type InferData<Result, Data> = Data extends undefined ? Result : Data;

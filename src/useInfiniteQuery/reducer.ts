@@ -14,7 +14,7 @@ type Action<NextPageParams, NextPageKey> = {
   payload: string;
 } | {
   type: "nextPageParams";
-  payload: { nextPageKey: NextPageKey | null, nextPageParams: NextPageParams | null }
+  payload: { nextPageKey?: NextPageKey | null, nextPageParams?: NextPageParams | null }
 }
 
 const initialState: State<any, any> = {
