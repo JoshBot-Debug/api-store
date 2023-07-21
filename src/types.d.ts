@@ -22,6 +22,7 @@ export declare namespace UseAPIStore {
     get: {
       result?: Result;
       fetch?: (nextParams?: NextPageParams | null) => Promise<Result>;
+      where?: WhereClause<InferData<Result, Data>> | WhereClause<InferData<Result, Data>>[];
     };
     getData: (result: Result) => Data[];
     getNextPageParams: (result: Result) => NextPageParams | null | undefined;
@@ -48,7 +49,7 @@ export declare namespace UseAPIStore {
     get: {
       result?: InferData<Data, Result>;
       fetch?: (...args: any[]) => Promise<InferData<Data, Result>>;
-      where?: WhereClause<InferData<Result, Data>>;
+      where?: WhereClause<InferData<Result, Data>> | WhereClause<InferData<Result, Data>>[];
     };
     getData?: (result: Result) => Data;
     fields?: Record<string, string[]>;

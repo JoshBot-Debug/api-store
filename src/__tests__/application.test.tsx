@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { render, renderHook, screen, waitFor } from "@testing-library/react";
 import APIStore from "../APIStore";
 import { fakeFetch, fakePaginatingFetch, useRenderCount } from "./test-utils";
@@ -845,6 +845,56 @@ describe("useMutation hook", () => {
 
     await waitFor(() => expect(JSON.parse(resultTag.textContent as string)).toStrictEqual(Object.values(users).map(u => ({ ...u, dob: u.id === 12 ? "New B'Day" : u.dob }))))
 
+  });
+
+
+  it("useMutation with useInfiniteQuery where clause.", async () => {
+
+    function Component() {
+
+      const [len, setLen] = useState(0);
+
+      const result = useInfiniteQuery({
+        table: "user",
+        get: {
+          fetch: async () => Object.values(users),
+          where: { gender: "female" }
+        },
+        getData: r => r,
+        getNextPageKey: () => null,
+        getNextPageParams: () => null,
+      })
+
+      console.log(result)
+      const request = useMutation({
+        table: "user",
+        mutate: (args) => fakeFetch({id: 15, username: "Angel", gender: "female"}, 100),
+      });
+
+      useEffect(() => {
+        setLen(result.result.length)
+      }, [result.result.length])
+
+      return (
+        <>
+          <p data-testid="length">{len}</p>
+          <button data-testid="mutate" onClick={request.mutate}>Mutate</button>
+        </>
+      )
+
+    }
+
+    render(<Component />, { wrapper })
+
+
+    const length = screen.getByTestId("length");
+    const mutate = screen.getByTestId("mutate");
+
+    await waitFor(() => expect(JSON.parse(length.textContent as string)).toStrictEqual(2))
+
+    act(() => mutate.click())
+
+    await waitFor(() => expect(JSON.parse(length.textContent as string)).toStrictEqual(3))
   });
 })
 

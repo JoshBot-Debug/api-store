@@ -24,6 +24,8 @@ export function useInfiniteQuery<
     fetch,
   } = config.get;
 
+  const _where = config.get.where as Data;
+
   const [state, dispatch] = useReducer<Reducer<NextPageParams, NextPageKey>>(reducer, {
     ...initialState,
     hasNextPage: !_result ? true : !!getNextPageParams(_result)
@@ -31,7 +33,15 @@ export function useInfiniteQuery<
 
   const context = useContext<UseAPIStore.Context<Data>>(APIStoreContext as any);
 
-  const [where, setWhere] = useState<UseAPIStore.WhereClause<Data[]>>(_result ? getData(_result) : []);
+  const [where, setWhere] = useState<UseAPIStore.WhereClause<Data[] | Data>>(
+    _where
+      ? _where
+      : _result
+        ? getData
+          ? getData(_result as Result)
+          : _result as Data
+        : []
+  );
 
   useEffect(() => { onMount(); }, []);
 
@@ -47,7 +57,11 @@ export function useInfiniteQuery<
     const nextPageKey = getNextPageKey(fetchResult);
     if (!nextPageParams || !nextPageKey) dispatch({ type: "hasNextPage", payload: false });
     dispatch({ type: "nextPageParams", payload: { nextPageKey, nextPageParams } });
-    setWhere(prev => context.filterUnique(table, (!prev ? data : [...prev, ...data])))
+    const where = _where ?? data;
+    setWhere(prev => {
+      if (Array.isArray(where)) return context.filterUnique(table, (!prev ? where : Array.isArray(prev) ? [...prev, ...where] : where))
+      return where
+    })
     context.upsert({ table, data });
     return data;
   }
@@ -57,7 +71,8 @@ export function useInfiniteQuery<
       if (_result) {
         const data = getData(_result);
         context.upsert({ table, data });
-        setWhere(context.filterUnique(table, data));
+        const where = _where ?? data;
+        setWhere(Array.isArray(where) ? context.filterUnique(table, data) : where);
       }
       if (enabled) {
         dispatch({ type: "isLoading", payload: true });
