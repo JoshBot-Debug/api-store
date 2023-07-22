@@ -14,7 +14,6 @@ export declare namespace UseAPIStore {
     cache: {};
     upsert: (params: { table: string; data: Data | Data[]; }) => void;
     get: (table: string, where: WhereClause<Data> | null, fields: Record<string, string[]> | null) => Data | null;
-    filterUnique: <Data>(table: string, data: Data[]) => Data[]
   }
 
   interface UseInfiniteQueryConfig<Result, Data, NextPageParams, NextPageKey extends string> {
@@ -88,7 +87,6 @@ export declare namespace Model {
       normalizedData: Record<string, Record<string, any>>,
       where: Record<string, any> | Record<string, any>[],
       fields: Record<string, string[]> | null,
-      isRecursive?: boolean,
     ) => T | null;
     filterUnique: <Data>(table: string, data: Data[]) => Data[]
   }
@@ -129,5 +127,30 @@ export declare namespace Model {
       }
 
     }
+  }
+
+  interface Operation {
+
+    /**
+     * Can be performed on any field, including primary keys.
+     * The default value is "*"
+     * @param on A function that is called on the value we need to perform a check against
+     * @returns A boolean, true to join, false to not
+     * @default *
+     */
+    join: (on?: ((value: any) => boolean) | "*") => string;
+
+  }
+
+  interface OperationProto {
+    __isJoin: true,
+    __on: ((value: any) => boolean) | "*"
+  }
+
+  interface Where<Keys extends string> extends Record<string, any> {
+    __conditions: Keys[];
+    __joins: Keys[];
+    __relations: Keys[];
+    __hasPrimaryKey: Record<Keys, boolean>;
   }
 }

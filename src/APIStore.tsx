@@ -8,7 +8,6 @@ const defaultContext: Context = {
   cache: {},
   upsert: () => { },
   get: () => null,
-  filterUnique: () => [],
 }
 
 export const APIStoreContext = createContext<Context>(defaultContext)
@@ -40,15 +39,10 @@ export default function APIStore(props: APIStoreProps) {
     return model.get(table, state.cache, where, fields);
   }
 
-  const filterUnique: Context["filterUnique"] = (table, data) => {
-    return model.filterUnique(table, data);
-  }
-
   const value = useMemo<Context>(() => ({
     cache: state.cache,
     upsert,
     get,
-    filterUnique,
   }), [state.cache])
 
   return <APIStoreContext.Provider value={value}>{children}</APIStoreContext.Provider>

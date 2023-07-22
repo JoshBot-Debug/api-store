@@ -41,14 +41,14 @@ export function useQuery<Result, Data>(config: UseAPIStore.UseQueryConfig<Result
         const data = getData ? getData(_result as Result) : _result as Data
         context.upsert({ table, data });
         const where = _where ?? data;
-        setWhere(Array.isArray(where) ? context.filterUnique(table, where) : where);
+        setWhere(where);
       }
       if (enabled && fetch) {
         dispatch({ type: "isLoading", payload: true });
         const fetchResult = await fetch();
         const data = getData ? getData(fetchResult as Result) : fetchResult as Data;
         const where = _where ?? data;
-        setWhere(Array.isArray(where) ? context.filterUnique(table, where) : where);
+        setWhere(where);
         context.upsert({ table, data });
       }
     }
@@ -68,7 +68,7 @@ export function useQuery<Result, Data>(config: UseAPIStore.UseQueryConfig<Result
       const fetchResult = await fetch(...args);
       const data = getData ? getData(fetchResult as Result) : fetchResult as Data
       const where = _where ?? data;
-      setWhere(Array.isArray(where) ? context.filterUnique(table, where) : where);
+      setWhere(where);
       context.upsert({ table, data });
       return data;
     }
@@ -77,6 +77,20 @@ export function useQuery<Result, Data>(config: UseAPIStore.UseQueryConfig<Result
       throw error;
     }
     finally { dispatch({ type: "isFetching", payload: false }); }
+  }
+
+  function stringifyWithCircular(obj: any) {
+    const cache = new Set();
+    return JSON.stringify(obj, (key, value) => {
+      if (typeof value === "object" && value !== null) {
+        if (cache.has(value)) {
+          // Circular reference found, handle it as you prefer
+          return "CIRCULAR_REFERENCE";
+        }
+        cache.add(value);
+      }
+      return value;
+    });
   }
 
   const result = JSON.stringify(context.get(table, where, fields));

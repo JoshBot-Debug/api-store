@@ -100,14 +100,18 @@ export default function reducer(state: State, action: Action): State {
     case "upsert": {
       const payload = action.payload;
       const model = action.model as Model.Model<Model.Table.Proto>;
+
+      const cache = toModel({
+        currentCache: state.cache,
+        initialTable: payload.table,
+        payload: payload.data,
+        model
+      });
+
+      console.log("CACHE UPDATED", cache)
       return {
         ...state,
-        cache: toModel({
-          currentCache: state.cache,
-          initialTable: payload.table,
-          payload: payload.data,
-          model
-        })
+        cache
       };
     }
 

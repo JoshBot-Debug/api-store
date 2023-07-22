@@ -58,10 +58,7 @@ export function useInfiniteQuery<
     if (!nextPageParams || !nextPageKey) dispatch({ type: "hasNextPage", payload: false });
     dispatch({ type: "nextPageParams", payload: { nextPageKey, nextPageParams } });
     const where = _where ?? data;
-    setWhere(prev => {
-      if (Array.isArray(where)) return context.filterUnique(table, (!prev ? where : Array.isArray(prev) ? [...prev, ...where] : where))
-      return where
-    })
+    setWhere(where)
     context.upsert({ table, data });
     return data;
   }
@@ -72,7 +69,7 @@ export function useInfiniteQuery<
         const data = getData(_result);
         context.upsert({ table, data });
         const where = _where ?? data;
-        setWhere(Array.isArray(where) ? context.filterUnique(table, data) : where);
+        setWhere(where);
       }
       if (enabled) {
         dispatch({ type: "isLoading", payload: true });
