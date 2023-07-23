@@ -7,7 +7,8 @@ import { useQuery } from "../useQuery";
 import { act } from "react-dom/test-utils";
 import { useMutation } from "../useMutation";
 import { useInfiniteQuery } from "../useInfiniteQuery";
-import { UseAPIStore } from "../types";
+import { Model, UseAPIStore } from "../types";
+import { toModel } from "../reducer";
 
 /**
  * The purpose of this file is to test a real world situation.
@@ -1030,11 +1031,11 @@ describe("useInfiniteQuery hook", () => {
       imageThumbnail,
       post,
       postComment,
-    ])
+    ]) as Model.Proto
 
     const largeWrapper = ({ children }: React.PropsWithChildren) => <APIStore model={model}>{children}</APIStore>
 
-    const data = {
+    const data1 = {
       "comments": [
         {
           "id": 40,
@@ -1483,40 +1484,678 @@ describe("useInfiniteQuery hook", () => {
       }
     }
 
-    const fetch = async (...args: any[]) => Promise.resolve(data);
-
-    const { result } = renderHook(() => (
-      useInfiniteQuery({
-        table: "postComment",
-        get: {
-          fetch: (nextParams: any) => fetch(nextParams),
-          where: {
-            postId: 10,
-            replyingToId: operation.join(v => v === null),
-            user: {
-              id: operation.join(),
-              profileImage: {
-                id: operation.join(),
-                thumbnails: operation.join()
-              }
+    const data2 = {
+      "comments": [
+        {
+          "id": 30,
+          "postId": 10,
+          "replyingToId": null,
+          "comment": "Mmm",
+          "createdAt": "2023-07-11T16:16:59.000Z",
+          "likeCount": 0,
+          "replyCount": 0,
+          "isLiked": 0,
+          "user": {
+            "id": 1,
+            "username": "the_overlord",
+            "profileImage": {
+              "id": 52,
+              "baseScale": "1.729451143053918",
+              "pinchScale": "1",
+              "translateX": "-7.0149733501274305",
+              "translateY": "15.782304906909268",
+              "originContainerWidth": "252.1904754638672",
+              "originContainerHeight": "251.8095245361328",
+              "aspectRatio": 1.38378,
+              "thumbnails": [
+                {
+                  "id": 198,
+                  "uri": "https://isekaied-photos.us-southeast-1.linodeobjects.com/1/profilePhoto.256.jpeg?1687545543490",
+                  "height": 185,
+                  "width": 256
+                },
+                {
+                  "id": 199,
+                  "uri": "https://isekaied-photos.us-southeast-1.linodeobjects.com/1/profilePhoto.512.jpeg?1687545543491",
+                  "height": 371,
+                  "width": 512
+                },
+                {
+                  "id": 200,
+                  "uri": "https://isekaied-photos.us-southeast-1.linodeobjects.com/1/profilePhoto.original.jpeg?1687545543490",
+                  "height": 1334,
+                  "width": 1842
+                }
+              ]
             }
           }
         },
-        getData: result => result.comments,
-        getNextPageParams: result => result.nextParams,
-        getNextPageKey: result => result.nextParams?.createdAt,
-      })
-    ), { wrapper: largeWrapper });
+        {
+          "id": 29,
+          "postId": 10,
+          "replyingToId": null,
+          "comment": "Ok",
+          "createdAt": "2023-07-11T16:08:11.000Z",
+          "likeCount": 0,
+          "replyCount": 0,
+          "isLiked": 0,
+          "user": {
+            "id": 1,
+            "username": "the_overlord",
+            "profileImage": {
+              "id": 52,
+              "baseScale": "1.729451143053918",
+              "pinchScale": "1",
+              "translateX": "-7.0149733501274305",
+              "translateY": "15.782304906909268",
+              "originContainerWidth": "252.1904754638672",
+              "originContainerHeight": "251.8095245361328",
+              "aspectRatio": 1.38378,
+              "thumbnails": [
+                {
+                  "id": 198,
+                  "uri": "https://isekaied-photos.us-southeast-1.linodeobjects.com/1/profilePhoto.256.jpeg?1687545543490",
+                  "height": 185,
+                  "width": 256
+                },
+                {
+                  "id": 199,
+                  "uri": "https://isekaied-photos.us-southeast-1.linodeobjects.com/1/profilePhoto.512.jpeg?1687545543491",
+                  "height": 371,
+                  "width": 512
+                },
+                {
+                  "id": 200,
+                  "uri": "https://isekaied-photos.us-southeast-1.linodeobjects.com/1/profilePhoto.original.jpeg?1687545543490",
+                  "height": 1334,
+                  "width": 1842
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": 28,
+          "postId": 10,
+          "replyingToId": null,
+          "comment": "Hello!!!  😂 😮 😍",
+          "createdAt": "2023-07-11T16:07:36.000Z",
+          "likeCount": 0,
+          "replyCount": 0,
+          "isLiked": 0,
+          "user": {
+            "id": 1,
+            "username": "the_overlord",
+            "profileImage": {
+              "id": 52,
+              "baseScale": "1.729451143053918",
+              "pinchScale": "1",
+              "translateX": "-7.0149733501274305",
+              "translateY": "15.782304906909268",
+              "originContainerWidth": "252.1904754638672",
+              "originContainerHeight": "251.8095245361328",
+              "aspectRatio": 1.38378,
+              "thumbnails": [
+                {
+                  "id": 198,
+                  "uri": "https://isekaied-photos.us-southeast-1.linodeobjects.com/1/profilePhoto.256.jpeg?1687545543490",
+                  "height": 185,
+                  "width": 256
+                },
+                {
+                  "id": 199,
+                  "uri": "https://isekaied-photos.us-southeast-1.linodeobjects.com/1/profilePhoto.512.jpeg?1687545543491",
+                  "height": 371,
+                  "width": 512
+                },
+                {
+                  "id": 200,
+                  "uri": "https://isekaied-photos.us-southeast-1.linodeobjects.com/1/profilePhoto.original.jpeg?1687545543490",
+                  "height": 1334,
+                  "width": 1842
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": 27,
+          "postId": 10,
+          "replyingToId": null,
+          "comment": "Hi",
+          "createdAt": "2023-07-11T15:59:15.000Z",
+          "likeCount": 0,
+          "replyCount": 0,
+          "isLiked": 0,
+          "user": {
+            "id": 1,
+            "username": "the_overlord",
+            "profileImage": {
+              "id": 52,
+              "baseScale": "1.729451143053918",
+              "pinchScale": "1",
+              "translateX": "-7.0149733501274305",
+              "translateY": "15.782304906909268",
+              "originContainerWidth": "252.1904754638672",
+              "originContainerHeight": "251.8095245361328",
+              "aspectRatio": 1.38378,
+              "thumbnails": [
+                {
+                  "id": 198,
+                  "uri": "https://isekaied-photos.us-southeast-1.linodeobjects.com/1/profilePhoto.256.jpeg?1687545543490",
+                  "height": 185,
+                  "width": 256
+                },
+                {
+                  "id": 199,
+                  "uri": "https://isekaied-photos.us-southeast-1.linodeobjects.com/1/profilePhoto.512.jpeg?1687545543491",
+                  "height": 371,
+                  "width": 512
+                },
+                {
+                  "id": 200,
+                  "uri": "https://isekaied-photos.us-southeast-1.linodeobjects.com/1/profilePhoto.original.jpeg?1687545543490",
+                  "height": 1334,
+                  "width": 1842
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": 26,
+          "postId": 10,
+          "replyingToId": null,
+          "comment": "Lorem ipsum dolor sit amet consectetur",
+          "createdAt": "2023-05-21T12:52:21.000Z",
+          "likeCount": 1,
+          "replyCount": 5,
+          "isLiked": 0,
+          "user": {
+            "id": 1,
+            "username": "the_overlord",
+            "profileImage": {
+              "id": 52,
+              "baseScale": "1.729451143053918",
+              "pinchScale": "1",
+              "translateX": "-7.0149733501274305",
+              "translateY": "15.782304906909268",
+              "originContainerWidth": "252.1904754638672",
+              "originContainerHeight": "251.8095245361328",
+              "aspectRatio": 1.38378,
+              "thumbnails": [
+                {
+                  "id": 198,
+                  "uri": "https://isekaied-photos.us-southeast-1.linodeobjects.com/1/profilePhoto.256.jpeg?1687545543490",
+                  "height": 185,
+                  "width": 256
+                },
+                {
+                  "id": 199,
+                  "uri": "https://isekaied-photos.us-southeast-1.linodeobjects.com/1/profilePhoto.512.jpeg?1687545543491",
+                  "height": 371,
+                  "width": 512
+                },
+                {
+                  "id": 200,
+                  "uri": "https://isekaied-photos.us-southeast-1.linodeobjects.com/1/profilePhoto.original.jpeg?1687545543490",
+                  "height": 1334,
+                  "width": 1842
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": 20,
+          "postId": 10,
+          "replyingToId": null,
+          "comment": "Lorem ipsum dolor sit amet consectetur, adipisicing elit. Non molestias dolor accusamus maxime blanditiis consectetur, est eligendi assumenda, temporibus corporis sapiente! Aspernatur optio voluptatibus nostrum, distinctio veniam eos architecto doloribus.",
+          "createdAt": "2023-05-21T12:52:15.000Z",
+          "likeCount": 1,
+          "replyCount": 0,
+          "isLiked": 0,
+          "user": {
+            "id": 1,
+            "username": "the_overlord",
+            "profileImage": {
+              "id": 52,
+              "baseScale": "1.729451143053918",
+              "pinchScale": "1",
+              "translateX": "-7.0149733501274305",
+              "translateY": "15.782304906909268",
+              "originContainerWidth": "252.1904754638672",
+              "originContainerHeight": "251.8095245361328",
+              "aspectRatio": 1.38378,
+              "thumbnails": [
+                {
+                  "id": 198,
+                  "uri": "https://isekaied-photos.us-southeast-1.linodeobjects.com/1/profilePhoto.256.jpeg?1687545543490",
+                  "height": 185,
+                  "width": 256
+                },
+                {
+                  "id": 199,
+                  "uri": "https://isekaied-photos.us-southeast-1.linodeobjects.com/1/profilePhoto.512.jpeg?1687545543491",
+                  "height": 371,
+                  "width": 512
+                },
+                {
+                  "id": 200,
+                  "uri": "https://isekaied-photos.us-southeast-1.linodeobjects.com/1/profilePhoto.original.jpeg?1687545543490",
+                  "height": 1334,
+                  "width": 1842
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": 19,
+          "postId": 10,
+          "replyingToId": null,
+          "comment": "Lorem ipsum dolor sit amet consectetur, adipisicing elit. Non molestias dolor accusamus maxime blanditiis consectetur, est eligendi assumenda, temporibus corporis sapiente! Aspernatur optio voluptatibus nostrum, distinctio veniam eos architecto doloribus.",
+          "createdAt": "2023-05-21T12:52:14.000Z",
+          "likeCount": 1,
+          "replyCount": 0,
+          "isLiked": 0,
+          "user": {
+            "id": 1,
+            "username": "the_overlord",
+            "profileImage": {
+              "id": 52,
+              "baseScale": "1.729451143053918",
+              "pinchScale": "1",
+              "translateX": "-7.0149733501274305",
+              "translateY": "15.782304906909268",
+              "originContainerWidth": "252.1904754638672",
+              "originContainerHeight": "251.8095245361328",
+              "aspectRatio": 1.38378,
+              "thumbnails": [
+                {
+                  "id": 198,
+                  "uri": "https://isekaied-photos.us-southeast-1.linodeobjects.com/1/profilePhoto.256.jpeg?1687545543490",
+                  "height": 185,
+                  "width": 256
+                },
+                {
+                  "id": 199,
+                  "uri": "https://isekaied-photos.us-southeast-1.linodeobjects.com/1/profilePhoto.512.jpeg?1687545543491",
+                  "height": 371,
+                  "width": 512
+                },
+                {
+                  "id": 200,
+                  "uri": "https://isekaied-photos.us-southeast-1.linodeobjects.com/1/profilePhoto.original.jpeg?1687545543490",
+                  "height": 1334,
+                  "width": 1842
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": 18,
+          "postId": 10,
+          "replyingToId": null,
+          "comment": "Lorem ipsum dolor sit amet consectetur, adipisicing elit. Non molestias dolor accusamus maxime blanditiis consectetur, est eligendi assumenda, temporibus corporis sapiente! Aspernatur optio voluptatibus nostrum, distinctio veniam eos architecto doloribus.",
+          "createdAt": "2023-05-21T12:52:13.000Z",
+          "likeCount": 1,
+          "replyCount": 0,
+          "isLiked": 0,
+          "user": {
+            "id": 1,
+            "username": "the_overlord",
+            "profileImage": {
+              "id": 52,
+              "baseScale": "1.729451143053918",
+              "pinchScale": "1",
+              "translateX": "-7.0149733501274305",
+              "translateY": "15.782304906909268",
+              "originContainerWidth": "252.1904754638672",
+              "originContainerHeight": "251.8095245361328",
+              "aspectRatio": 1.38378,
+              "thumbnails": [
+                {
+                  "id": 198,
+                  "uri": "https://isekaied-photos.us-southeast-1.linodeobjects.com/1/profilePhoto.256.jpeg?1687545543490",
+                  "height": 185,
+                  "width": 256
+                },
+                {
+                  "id": 199,
+                  "uri": "https://isekaied-photos.us-southeast-1.linodeobjects.com/1/profilePhoto.512.jpeg?1687545543491",
+                  "height": 371,
+                  "width": 512
+                },
+                {
+                  "id": 200,
+                  "uri": "https://isekaied-photos.us-southeast-1.linodeobjects.com/1/profilePhoto.original.jpeg?1687545543490",
+                  "height": 1334,
+                  "width": 1842
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": 17,
+          "postId": 10,
+          "replyingToId": null,
+          "comment": "Lorem ipsum dolor sit amet consectetur, adipisicing elit. Non molestias dolor accusamus maxime blanditiis consectetur, est eligendi assumenda, temporibus corporis sapiente! Aspernatur optio voluptatibus nostrum, distinctio veniam eos architecto doloribus.",
+          "createdAt": "2023-05-21T12:52:12.000Z",
+          "likeCount": 0,
+          "replyCount": 0,
+          "isLiked": 0,
+          "user": {
+            "id": 1,
+            "username": "the_overlord",
+            "profileImage": {
+              "id": 52,
+              "baseScale": "1.729451143053918",
+              "pinchScale": "1",
+              "translateX": "-7.0149733501274305",
+              "translateY": "15.782304906909268",
+              "originContainerWidth": "252.1904754638672",
+              "originContainerHeight": "251.8095245361328",
+              "aspectRatio": 1.38378,
+              "thumbnails": [
+                {
+                  "id": 198,
+                  "uri": "https://isekaied-photos.us-southeast-1.linodeobjects.com/1/profilePhoto.256.jpeg?1687545543490",
+                  "height": 185,
+                  "width": 256
+                },
+                {
+                  "id": 199,
+                  "uri": "https://isekaied-photos.us-southeast-1.linodeobjects.com/1/profilePhoto.512.jpeg?1687545543491",
+                  "height": 371,
+                  "width": 512
+                },
+                {
+                  "id": 200,
+                  "uri": "https://isekaied-photos.us-southeast-1.linodeobjects.com/1/profilePhoto.original.jpeg?1687545543490",
+                  "height": 1334,
+                  "width": 1842
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": 16,
+          "postId": 10,
+          "replyingToId": null,
+          "comment": "Lorem ipsum dolor sit amet consectetur, adipisicing elit. Non molestias dolor accusamus maxime blanditiis consectetur, est eligendi assumenda, temporibus corporis sapiente! Aspernatur optio voluptatibus nostrum, distinctio veniam eos architecto doloribus.",
+          "createdAt": "2023-05-21T12:52:11.000Z",
+          "likeCount": 0,
+          "replyCount": 0,
+          "isLiked": 0,
+          "user": {
+            "id": 1,
+            "username": "the_overlord",
+            "profileImage": {
+              "id": 52,
+              "baseScale": "1.729451143053918",
+              "pinchScale": "1",
+              "translateX": "-7.0149733501274305",
+              "translateY": "15.782304906909268",
+              "originContainerWidth": "252.1904754638672",
+              "originContainerHeight": "251.8095245361328",
+              "aspectRatio": 1.38378,
+              "thumbnails": [
+                {
+                  "id": 198,
+                  "uri": "https://isekaied-photos.us-southeast-1.linodeobjects.com/1/profilePhoto.256.jpeg?1687545543490",
+                  "height": 185,
+                  "width": 256
+                },
+                {
+                  "id": 199,
+                  "uri": "https://isekaied-photos.us-southeast-1.linodeobjects.com/1/profilePhoto.512.jpeg?1687545543491",
+                  "height": 371,
+                  "width": 512
+                },
+                {
+                  "id": 200,
+                  "uri": "https://isekaied-photos.us-southeast-1.linodeobjects.com/1/profilePhoto.original.jpeg?1687545543490",
+                  "height": 1334,
+                  "width": 1842
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "nextParams": {
+        "postId": "10",
+        "createdAt": "2023-05-21T12:52:11.000Z"
+      }
+    }
 
-    await waitFor(() => {
-      expect(result.current.result).toBe(null)
+    const data3 = {
+      "comments": [
+        {
+          "id": 52,
+          "postId": 10,
+          "replyingToId": 39,
+          "comment": "@the_overlord Hmmm",
+          "createdAt": "2023-07-20T14:43:00.000Z",
+          "likeCount": 0,
+          "replyCount": 0,
+          "isLiked": 0,
+          "user": {
+            "id": 2,
+            "username": "qwerty",
+            "profileImage": {
+              "id": 48,
+              "baseScale": "1.4",
+              "pinchScale": "1",
+              "translateX": "-3.5714285714285716",
+              "translateY": "28.571428571428573",
+              "originContainerWidth": "252",
+              "originContainerHeight": "252",
+              "aspectRatio": 0.777344,
+              "thumbnails": [
+                {
+                  "id": 186,
+                  "uri": "https://isekaied-photos.us-southeast-1.linodeobjects.com/2/profilePhoto.256.jpeg?1687444436097",
+                  "height": 256,
+                  "width": 199
+                },
+                {
+                  "id": 187,
+                  "uri": "https://isekaied-photos.us-southeast-1.linodeobjects.com/2/profilePhoto.512.jpeg?1687444436097",
+                  "height": 512,
+                  "width": 398
+                },
+                {
+                  "id": 188,
+                  "uri": "https://isekaied-photos.us-southeast-1.linodeobjects.com/2/profilePhoto.original.jpeg?1687444436095",
+                  "height": 900,
+                  "width": 700
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": 51,
+          "postId": 10,
+          "replyingToId": 39,
+          "comment": "@the_overlord Hmm",
+          "createdAt": "2023-07-20T14:05:55.000Z",
+          "likeCount": 0,
+          "replyCount": 0,
+          "isLiked": 0,
+          "user": {
+            "id": 1,
+            "username": "the_overlord",
+            "profileImage": {
+              "id": 52,
+              "baseScale": "1.729451143053918",
+              "pinchScale": "1",
+              "translateX": "-7.0149733501274305",
+              "translateY": "15.782304906909268",
+              "originContainerWidth": "252.1904754638672",
+              "originContainerHeight": "251.8095245361328",
+              "aspectRatio": 1.38378,
+              "thumbnails": [
+                {
+                  "id": 198,
+                  "uri": "https://isekaied-photos.us-southeast-1.linodeobjects.com/1/profilePhoto.256.jpeg?1687545543490",
+                  "height": 185,
+                  "width": 256
+                },
+                {
+                  "id": 199,
+                  "uri": "https://isekaied-photos.us-southeast-1.linodeobjects.com/1/profilePhoto.512.jpeg?1687545543491",
+                  "height": 371,
+                  "width": 512
+                },
+                {
+                  "id": 200,
+                  "uri": "https://isekaied-photos.us-southeast-1.linodeobjects.com/1/profilePhoto.original.jpeg?1687545543490",
+                  "height": 1334,
+                  "width": 1842
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": 41,
+          "postId": 10,
+          "replyingToId": 39,
+          "comment": "@the_overlord Ohh",
+          "createdAt": "2023-07-13T14:31:46.000Z",
+          "likeCount": 0,
+          "replyCount": 1,
+          "isLiked": 0,
+          "user": {
+            "id": 1,
+            "username": "the_overlord",
+            "profileImage": {
+              "id": 52,
+              "baseScale": "1.729451143053918",
+              "pinchScale": "1",
+              "translateX": "-7.0149733501274305",
+              "translateY": "15.782304906909268",
+              "originContainerWidth": "252.1904754638672",
+              "originContainerHeight": "251.8095245361328",
+              "aspectRatio": 1.38378,
+              "thumbnails": [
+                {
+                  "id": 198,
+                  "uri": "https://isekaied-photos.us-southeast-1.linodeobjects.com/1/profilePhoto.256.jpeg?1687545543490",
+                  "height": 185,
+                  "width": 256
+                },
+                {
+                  "id": 199,
+                  "uri": "https://isekaied-photos.us-southeast-1.linodeobjects.com/1/profilePhoto.512.jpeg?1687545543491",
+                  "height": 371,
+                  "width": 512
+                },
+                {
+                  "id": 200,
+                  "uri": "https://isekaied-photos.us-southeast-1.linodeobjects.com/1/profilePhoto.original.jpeg?1687545543490",
+                  "height": 1334,
+                  "width": 1842
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "nextParams": {
+        "postCommentId": "39",
+        "createdAt": "2023-07-13T14:31:46.000Z"
+      }
+    }
+
+    const cache1 = { "thumbnail": { "198": { "id": 198, "uri": "https://isekaied-photos.us-southeast-1.linodeobjects.com/1/profilePhoto.256.jpeg?1687545543490", "height": 185, "width": 256 }, "199": { "id": 199, "uri": "https://isekaied-photos.us-southeast-1.linodeobjects.com/1/profilePhoto.512.jpeg?1687545543491", "height": 371, "width": 512 }, "200": { "id": 200, "uri": "https://isekaied-photos.us-southeast-1.linodeobjects.com/1/profilePhoto.original.jpeg?1687545543490", "height": 1334, "width": 1842 } }, "image": { "52": { "id": 52, "baseScale": "1.729451143053918", "pinchScale": "1", "translateX": "-7.0149733501274305", "translateY": "15.782304906909268", "originContainerWidth": "252.1904754638672", "originContainerHeight": "251.8095245361328", "aspectRatio": 1.38378, "thumbnails": [198, 199, 200] } }, "user": { "1": { "id": 1, "username": "the_overlord", "profileImage": 52 } }, "postComment": { "31": { "id": 31, "postId": 10, "replyingToId": null, "comment": "Ok", "createdAt": "2023-07-11T16:17:03.000Z", "likeCount": 0, "replyCount": 0, "isLiked": 0, "user": 1 }, "32": { "id": 32, "postId": 10, "replyingToId": null, "comment": "I", "createdAt": "2023-07-11T16:17:15.000Z", "likeCount": 0, "replyCount": 0, "isLiked": 0, "user": 1 }, "33": { "id": 33, "postId": 10, "replyingToId": null, "comment": "Huh", "createdAt": "2023-07-11T16:19:14.000Z", "likeCount": 1, "replyCount": 0, "isLiked": 0, "user": 1 }, "34": { "id": 34, "postId": 10, "replyingToId": null, "comment": "Why", "createdAt": "2023-07-11T16:21:06.000Z", "likeCount": 0, "replyCount": 0, "isLiked": 0, "user": 1 }, "35": { "id": 35, "postId": 10, "replyingToId": null, "comment": "Where", "createdAt": "2023-07-11T16:21:19.000Z", "likeCount": 0, "replyCount": 0, "isLiked": 0, "user": 1 }, "36": { "id": 36, "postId": 10, "replyingToId": null, "comment": "Ohh!!\n\n\n\nNice!  ❤️", "createdAt": "2023-07-11T16:21:50.000Z", "likeCount": 0, "replyCount": 0, "isLiked": 0, "user": 1 }, "37": { "id": 37, "postId": 10, "replyingToId": null, "comment": "Muah! ♥️", "createdAt": "2023-07-12T13:16:54.000Z", "likeCount": 0, "replyCount": 0, "isLiked": 0, "user": 1 }, "38": { "id": 38, "postId": 10, "replyingToId": null, "comment": "Hey there How are you? @joshua", "createdAt": "2023-07-12T15:25:47.000Z", "likeCount": 0, "replyCount": 8, "isLiked": 0, "user": 1 }, "39": { "id": 39, "postId": 10, "replyingToId": null, "comment": "Hey @the_overlord How are you?", "createdAt": "2023-07-12T16:17:51.000Z", "likeCount": 0, "replyCount": 3, "isLiked": 0, "user": 1 }, "40": { "id": 40, "postId": 10, "replyingToId": null, "comment": "@the_overlord ", "createdAt": "2023-07-12T16:45:48.000Z", "likeCount": 0, "replyCount": 0, "isLiked": 0, "user": 1 } } }
+
+    const cache = toModel({
+      currentCache: cache1,
+      initialTable: "postComment",
+      payload: data2.comments,
+      model
     })
 
 
-    await waitFor(() => {
-      expect(result.current.result[0].user.profileImage.thumbnails.length).toBe(3)
-      expect(result.current.result.length).toBe(10)
-    })
+    const copy = { ...cache }
+
+    console.log("Before", cache['postComment'][40].user, copy['postComment'][40].user)
+
+
+    model.get(
+      "postComment",
+      JSON.parse(JSON.stringify(cache)),
+      {
+        postId: 10,
+        replyingToId: operation.join(v => v === null),
+        user: {
+          id: operation.join(),
+          profileImage: {
+            id: operation.join(),
+            thumbnails: operation.join()
+          }
+        }
+      },
+      null
+    )
+
+
+    console.log("After", cache['postComment'][40].user,  copy['postComment'][40].user)
+
+    // const fetch = async (...args: any[]) => {
+    //   // const next = args[0];
+    //   // if (next) return Promise.resolve(data2)
+    //   return Promise.resolve({
+    //     comments: [...data1.comments, ...data3.comments],
+    //     nextParams: data1.nextParams
+    //   })
+    // };
+
+    // const { result } = renderHook(() => (
+    //   useInfiniteQuery({
+    //     table: "postComment",
+    //     get: {
+    //       fetch: (nextParams: any) => fetch(nextParams),
+    //       where: {
+    //         postId: 10,
+    //         replyingToId: operation.join(v => v === null),
+    //         user: {
+    //           id: operation.join(),
+    //           profileImage: {
+    //             id: operation.join(),
+    //             thumbnails: operation.join()
+    //           }
+    //         }
+    //       }
+    //     },
+    //     getData: result => result.comments,
+    //     getNextPageParams: result => result.nextParams,
+    //     getNextPageKey: result => result.nextParams?.createdAt,
+    //   })
+    // ), { wrapper: largeWrapper });
+
+    // await waitFor(() => {
+    //   expect(result.current.result).toBe(null)
+    // })
+
+
+    // await waitFor(() => {
+    //   expect(result.current.result.length).toBe(10)
+    // })
+
+    // await act(() => result.current.fetchNextPage())
+
+    // await waitFor(() => {
+    //   console.log(result.current.result[result.current.result.length - 1])
+    //   expect(result.current.result.length).toBe(20)
+    // })
 
   });
 

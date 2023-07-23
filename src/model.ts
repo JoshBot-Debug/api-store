@@ -144,7 +144,7 @@ export function createModel(tables: Model.Table.Created[]) {
 
 
       // If this value is a join, continue
-      if ((value as Model.OperationProto).__isJoin) {
+      if ((value as Model.OperationProto)?.__isJoin) {
 
         // This is a join, it should be performed last
         (result as Model.Where<string>).__joins.push(key);
@@ -185,7 +185,7 @@ export function createModel(tables: Model.Table.Created[]) {
   function find(record: Record<string, any>, fKey: string[], fValue: any[]) {
     return Object.entries(record)
       .filter(([key, row]) => fKey.every((k, i) => row[k] === fValue[i]))
-      .map(([_, row]) => row);
+      .map(([_, row]) => ({ ...row }));
   }
 
 
@@ -216,13 +216,13 @@ export function createModel(tables: Model.Table.Created[]) {
           }
         }
 
-        if(relationshipType === "hasMany") {
+        if (relationshipType === "hasMany") {
           const values = [];
 
           for (let i = 0; i < record[cKey].length; i++) {
             const primaryKey = record[cKey][i];
             const row = data[primaryKey];
-            if(row) values.push(row);
+            if (row) values.push(row);
           }
 
           // If the value is valid add it to results
@@ -278,7 +278,6 @@ export function createModel(tables: Model.Table.Created[]) {
 
 
   function applyObjectRelations(
-    table: string,
     schema: Model.Table.Proto,
     iteration: number,
     clauseKeys: string[],
@@ -321,6 +320,7 @@ export function createModel(tables: Model.Table.Created[]) {
       let result: any = null;
 
       // The selected table
+      // Deep copy the object
       const record = normalizedData[table];
 
       // If there is no record, exit.
@@ -405,7 +405,6 @@ export function createModel(tables: Model.Table.Created[]) {
           for (let r = 0; r < result.length; r++) {
             for (let ck = 0; ck < clauseKeys.length; ck++) {
               applyObjectRelations(
-                table,
                 schema,
                 ck,
                 clauseKeys,
@@ -420,7 +419,6 @@ export function createModel(tables: Model.Table.Created[]) {
         // If results is not an array, do the same
         for (let ck = 0; ck < clauseKeys.length; ck++) {
           applyObjectRelations(
-            table,
             schema,
             ck,
             clauseKeys,
@@ -446,9 +444,9 @@ export function createModel(tables: Model.Table.Created[]) {
         if (!result) {
           result = Object
             .values(record)
-            .flatMap(result => {
+            .flatMap((res: any) => {
 
-              const findResults = findByJoin(this, table, normalizedData, result, clauseKeys, clauseValues);
+              const findResults = findByJoin(this, table, normalizedData, res, clauseKeys, clauseValues);
               if (!findResults) return []
 
               for (let i = 0; i < clauseKeys.length; i++) {
@@ -458,10 +456,10 @@ export function createModel(tables: Model.Table.Created[]) {
                 // If there is no match and it is not a *, then remove the record
                 if (!(cKey in findResults) && cValue.__on !== "*") return [];
 
-                result[cKey] = findResults[cKey];
+                res[cKey] = findResults[cKey];
               }
 
-              return result
+              return res
             })
         }
 
