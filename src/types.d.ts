@@ -155,6 +155,7 @@ export declare namespace Model {
   }
 
   interface ParentRef extends extends Record<string, any> {
+    __parentField: any;
     __parentValue: any;
   }
 }

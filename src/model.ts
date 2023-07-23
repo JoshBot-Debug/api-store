@@ -74,6 +74,7 @@ export function createTable(name: string, model: Model.Table.Model, options?: { 
 
       return this;
     },
+
   });
 
   return table as unknown as Model.Table.Created
@@ -285,8 +286,9 @@ export function createModel(tables: Model.Table.Created[]) {
   }
 
 
-  function applyParentRef(where: Record<string, any>, value: any) {
+  function applyParentRef(where: Record<string, any>, field: string, value: any) {
     Object.setPrototypeOf(where, {
+      __parentField: field,
       __parentValue: value,
     })
   }
@@ -298,25 +300,26 @@ export function createModel(tables: Model.Table.Created[]) {
     clauseKeys: string[],
     clauseValues: any[],
     record: Record<string, any>,
-    get: (ckTable: string, ckValue: string[]) => any
+    get: (ckTable: string, ckValue: any) => any,
+    fields: Record<string, string[]> | null,
   ) {
     const ckKey = clauseKeys[iteration];
-    const ckTable = (schema.__relationship[ckKey] as Model.Table.Relationship.Proto).__name;
+    const ckRelation = (schema.__relationship[ckKey] as Model.Table.Relationship.Proto);
     const ckValue = clauseValues[iteration];
     const relationshipType = (schema as any)[ckKey];
 
     if (relationshipType === "hasOne") {
-      applyParentRef(ckValue, record[ckKey]);
-      record[ckKey] = get(ckTable, ckValue)
+      applyParentRef(ckValue, ckKey, record[ckKey]);
+      record[ckKey] = get(ckRelation.__name, ckValue)
     }
 
     if (relationshipType === "hasMany") {
       record[ckKey] = Object
-        .values(ckValue)
-        .map((ckWhere: any) => {
-          applyParentRef(ckWhere, record[ckKey]);
-          return get(ckTable, ckWhere)
-        })
+      .values(ckValue)
+      .map((ckWhere: any) => {
+        applyParentRef(ckWhere, ckKey, record[ckKey]);
+        return get(ckRelation.__name, ckWhere)
+      })
     }
   }
 
@@ -410,6 +413,7 @@ export function createModel(tables: Model.Table.Created[]) {
         const clauseKeys = clauses.__relations;
         const clauseValues = clauses.__relations.map(c => clauses[c])
 
+
         // If result is an array
         // The where clause did not contain a primary key, instead it contained conditions.
         // Loop over the results, get all the matching related fields.
@@ -423,7 +427,8 @@ export function createModel(tables: Model.Table.Created[]) {
                 clauseKeys,
                 clauseValues,
                 result[r],
-                (ckTable, ckValue) => this.get(ckTable, normalizedData, ckValue, fields)
+                (ckTable, ckValue) => this.get(ckTable, normalizedData, ckValue, fields),
+                fields,
               )
             }
           }
@@ -437,9 +442,11 @@ export function createModel(tables: Model.Table.Created[]) {
             clauseKeys,
             clauseValues,
             result,
-            (ckTable, ckValue) => this.get(ckTable, normalizedData, ckValue, fields)
+            (ckTable, ckValue) => this.get(ckTable, normalizedData, ckValue, fields),
+            fields,
           )
         }
+
       }
 
 
@@ -533,8 +540,7 @@ export function createModel(tables: Model.Table.Created[]) {
 
 
       // If the we have specified the fields we want to retrieve
-      if (fields) keepSelectedFields(table, result, fields)
-
+      if (fields) keepSelectedFields( where?.__parentField ?? table, result, fields)
 
       return result
     },
