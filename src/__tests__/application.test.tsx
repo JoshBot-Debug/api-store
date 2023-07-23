@@ -2744,18 +2744,20 @@ describe("useInfiniteQuery hook", () => {
       JSON.parse(JSON.stringify(cache)),
       {
         id: 10,
-        images: [
-          {id: 54}
-        ]
+        images: {
+          id: operation.join(),
+          thumbnails: operation.join()
+        }
       },
       {
         post: ["id", "images", "user"],
         images: ["id", "thumbnails"],
+        thumbnails: ["id", "height"],
       }
     )
     // operation.join()
 
-    console.log(result.images)
+    console.log(result.images[0])
 
 
     // console.log(result?.user.profileImage)

@@ -166,7 +166,14 @@ export function createModel(tables: Model.Table.Created[]) {
 
         (result as Model.Where<string>).__relations.push(key);
 
-        result[key] = cleanWhere(self, result[key], schema.__relationship.__alias[key]);
+        const clean = cleanWhere(self, result[key], schema.__relationship.__alias[key]);;
+
+        if (Array.isArray(result[key])) {
+          result[key] = Object.values(clean);
+          continue;
+        }
+
+        result[key] = clean;
         continue;
       }
 
@@ -301,25 +308,25 @@ export function createModel(tables: Model.Table.Created[]) {
     clauseValues: any[],
     record: Record<string, any>,
     get: (ckTable: string, ckValue: any) => any,
-    fields: Record<string, string[]> | null,
   ) {
     const ckKey = clauseKeys[iteration];
     const ckRelation = (schema.__relationship[ckKey] as Model.Table.Relationship.Proto);
     const ckValue = clauseValues[iteration];
     const relationshipType = (schema as any)[ckKey];
+    const isCkArray = Array.isArray(ckValue);
 
-    if (relationshipType === "hasOne") {
+    if (relationshipType === "hasOne" || !isCkArray) {
       applyParentRef(ckValue, ckKey, record[ckKey]);
       record[ckKey] = get(ckRelation.__name, ckValue)
     }
 
-    if (relationshipType === "hasMany") {
+    if (relationshipType === "hasMany" && isCkArray) {
       record[ckKey] = Object
-      .values(ckValue)
-      .map((ckWhere: any) => {
-        applyParentRef(ckWhere, ckKey, record[ckKey]);
-        return get(ckRelation.__name, ckWhere)
-      })
+        .values(ckValue)
+        .flatMap((ckWhere: any) => {
+          applyParentRef(ckWhere, ckKey, record[ckKey]);
+          return get(ckRelation.__name, ckWhere)
+        })
     }
   }
 
@@ -362,8 +369,27 @@ export function createModel(tables: Model.Table.Created[]) {
 
         const isJoin = (primaryKeyValue as Model.OperationProto).__isJoin;
 
+
         // Join operation on a primary key
-        if (isJoin) match = record[(where as Model.ParentRef).__parentValue];
+        // Handle all join possibilities
+        if (isJoin) {
+
+          const primaryKeys = (where as Model.ParentRef).__parentValue;
+          const hasMany = Array.isArray(primaryKeys);
+
+          // May be an array or a single value
+          // Depends on if this relationship was a hasOne or hasMany.
+          const selected = !hasMany ? record[primaryKeys] : primaryKeys.map(pk => record[pk]);
+
+          // If we are joining on *, set the value regardless
+          if (primaryKeyValue.__on === "*") match = selected;
+
+          // If we are joining on a function, check for true
+          if (
+            typeof primaryKeyValue.__on === "function" &&
+            primaryKeyValue.__on(selected)
+          ) match = selected;
+        }
 
         // If this is the object instead of the primary key value
         // Then it is a relation that contains the primary key
@@ -388,8 +414,7 @@ export function createModel(tables: Model.Table.Created[]) {
 
         // Set result to a new object here to 
         // prevent normalizedData, state.cache from mutating...
-        // May need to track this and fix it at the root.
-        result = { ...match };
+        result = Array.isArray(match) ? [...match] : { ...match };
       }
 
 
@@ -413,7 +438,6 @@ export function createModel(tables: Model.Table.Created[]) {
         const clauseKeys = clauses.__relations;
         const clauseValues = clauses.__relations.map(c => clauses[c])
 
-
         // If result is an array
         // The where clause did not contain a primary key, instead it contained conditions.
         // Loop over the results, get all the matching related fields.
@@ -428,7 +452,6 @@ export function createModel(tables: Model.Table.Created[]) {
                 clauseValues,
                 result[r],
                 (ckTable, ckValue) => this.get(ckTable, normalizedData, ckValue, fields),
-                fields,
               )
             }
           }
@@ -443,7 +466,6 @@ export function createModel(tables: Model.Table.Created[]) {
             clauseValues,
             result,
             (ckTable, ckValue) => this.get(ckTable, normalizedData, ckValue, fields),
-            fields,
           )
         }
 
@@ -540,7 +562,7 @@ export function createModel(tables: Model.Table.Created[]) {
 
 
       // If the we have specified the fields we want to retrieve
-      if (fields) keepSelectedFields( where?.__parentField ?? table, result, fields)
+      if (fields) keepSelectedFields(where?.__parentField ?? table, result, fields)
 
       return result
     },
