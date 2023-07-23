@@ -138,13 +138,13 @@ export declare namespace Model {
      * @returns A boolean, true to join, false to not
      * @default *
      */
-    join: (on?: ((value: any) => boolean) | "*") => string;
+    join: (on?: ((value: any, record: Record<string, any>) => boolean) | "*") => string;
 
   }
 
   interface OperationProto {
     __isJoin: true,
-    __on: ((value: any) => boolean) | "*"
+    __on: ((value: any, record: Record<string, any>) => boolean) | "*"
   }
 
   interface Where<Keys extends string> extends Record<string, any> {

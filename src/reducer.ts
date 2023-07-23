@@ -82,7 +82,6 @@ export function toModel(params: {
         initialTable: childSchema.__name,
         payload: child,
       });
-
     }
 
     const k = parentSchema.__relationship.__alias[parentSchema.__pk] ?? parentSchema.__pk;
@@ -100,18 +99,14 @@ export default function reducer(state: State, action: Action): State {
     case "upsert": {
       const payload = action.payload;
       const model = action.model as Model.Model<Model.Table.Proto>;
-
-      const cache = toModel({
-        currentCache: state.cache,
-        initialTable: payload.table,
-        payload: payload.data,
-        model
-      });
-
-      console.log("CACHE UPDATED", cache)
       return {
         ...state,
-        cache
+        cache: toModel({
+          currentCache: state.cache,
+          initialTable: payload.table,
+          payload: payload.data,
+          model
+        })
       };
     }
 

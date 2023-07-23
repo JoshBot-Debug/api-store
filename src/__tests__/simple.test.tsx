@@ -4,6 +4,7 @@ import { createModel, createTable, operation } from "../model";
 import { useInfiniteQuery } from "../useInfiniteQuery";
 import { useMutation } from "../useMutation";
 import { fakeFetch } from "./test-utils";
+import { useQuery } from "../useQuery";
 
 
 const token = createTable("token", {}, { pk: "user" })
@@ -74,9 +75,9 @@ it("useInfiniteQuery where clause, join test.", async () => {
       get: {
         fetch: async () => Object.values(users),
         where: {
-          gender: "female"
-          // token: operation.join(),
-          // email: operation.join(e => e !== "joshua@gmail.com")
+          gender: "female",
+          token: operation.join(),
+          email: operation.join(e => e !== "joshua@gmail.com"),
         }
       },
       getData: r => r,
@@ -87,11 +88,17 @@ it("useInfiniteQuery where clause, join test.", async () => {
 
 
   await waitFor(() => {
-    
-    console.log(result.current.result)
     expect(result.current.result.length).toBe(2)
-
   })
+  // const { result } = renderHook(() => (
+  //   useQuery({
+  //     table: "user",
+  //     get: {
+  //       where: { gender: "female" }
+  //     },
+  //   })
+  // ), { wrapper });
 
+  // expect(result.current.result).toStrictEqual([users[11], { ...users[12], token: users[12].token.user }]);
 
 });

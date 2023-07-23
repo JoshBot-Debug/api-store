@@ -58,7 +58,10 @@ export function useInfiniteQuery<
     if (!nextPageParams || !nextPageKey) dispatch({ type: "hasNextPage", payload: false });
     dispatch({ type: "nextPageParams", payload: { nextPageKey, nextPageParams } });
     const where = _where ?? data;
-    setWhere(where)
+    setWhere((prev) => {
+      if(Array.isArray(prev) && Array.isArray(where)) return [...prev, ...where]
+      return where
+    })
     context.upsert({ table, data });
     return data;
   }

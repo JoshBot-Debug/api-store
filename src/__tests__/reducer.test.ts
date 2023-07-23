@@ -134,7 +134,7 @@ describe("reducer", () => {
       model,
       currentCache: {},
       initialTable: "user",
-      payload: userData
+      payload: userData,
     })
 
     const result = model.get("user", data, userData, null);

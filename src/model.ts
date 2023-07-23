@@ -117,8 +117,25 @@ export function createModel(tables: Model.Table.Created[]) {
       // If this is the primary key, don't remove it
       if (key === schema.__pk) {
 
-        (result as Model.Where<string>).__hasPrimaryKey[table] = true;
-        continue;
+        // If the value is an object, then it is a related field
+        // that contains the primary key
+        // Check it to see if it has the primary key.
+        // If it does, then has primary key is true and
+        // We also need to set this key as a relation so don't continue
+        if (typeof value === "object") {
+          const relationTableName = schema.__relationship.__alias[schema.__pk];
+          const relation = (schema.__relationship[relationTableName] as Model.Table.Relationship.Proto);
+
+          // If we have the primary key
+          if (value[relation.__pk]) {
+            (result as Model.Where<string>).__hasPrimaryKey[table] = true;
+          }
+        }
+
+        if (typeof value !== "object") {
+          (result as Model.Where<string>).__hasPrimaryKey[table] = true;
+          continue;
+        }
       }
 
       // If this is a related object, traverse inside
@@ -131,6 +148,7 @@ export function createModel(tables: Model.Table.Created[]) {
           (result as Model.Where<string>).__conditions.push(key);
           continue;
         }
+
 
         (result as Model.Where<string>).__relations.push(key);
 
@@ -149,6 +167,7 @@ export function createModel(tables: Model.Table.Created[]) {
 
     return result as Model.Where<string>;
   }
+
 
   function find(record: Record<string, any>, fKey: string[], fValue: any[]) {
     return Object.entries(record)
@@ -177,14 +196,14 @@ export function createModel(tables: Model.Table.Created[]) {
         const value = normalizedData[relationSchema.__name][record[currentRelation.__pk]];
 
         // If the value is valid add it to results
-        if (operation === "*" || operation(value)) {
+        if (operation === "*" || operation(value, record)) {
           if (!result) result = {};
           result[cKey] = value
         }
       }
 
       // If the value is valid add it to results
-      if (!relation && (operation === "*" || operation(record[cKey]))) {
+      if (!relation && (operation === "*" || operation(record[cKey], record))) {
         if (!result) result = {};
         result[cKey] = record[cKey]
       }
@@ -194,17 +213,38 @@ export function createModel(tables: Model.Table.Created[]) {
   }
 
 
+  function filterSelectedFields(record: Record<string, any>, select: string[]) {
+    for (const key in record) {
+      if (!Object.prototype.hasOwnProperty.call(record, key)) continue;
+      if (select.includes(key)) continue;
+      delete record[key];
+    }
+  }
+
+
+  function filterUnique(self: Model.Proto, table: string, where: Record<string, any>[]) {
+    const schema = self[table] as Model.Table.Proto;
+    return where
+      .reduce((result, current) => {
+        const pk = current[schema.__pk];
+        if (pk === undefined) throw new Error("If you want to filter out unique records, you must pass a primary key.")
+        if (result.pks.includes(pk)) return result;
+        return {
+          pks: [...result.pks, pk],
+          clauses: [...result.clauses, current]
+        }
+      }, { pks: [], clauses: [] } as { pks: any[]; clauses: Record<string, any>[] })
+      .clauses as Record<string, any>[]
+  }
+
   Object.setPrototypeOf(model, <Model.Proto>{
     get(table, normalizedData, where, fields) {
 
-      console.log(
-        table,
-        where,
-        normalizedData["user"][10]?.token
-      )
-
       // If our where clause is an array, map over it and get the values
-      if (Array.isArray(where)) return where.flatMap(_where => this.get(table, normalizedData, _where, fields))
+      if (Array.isArray(where)) {
+        return filterUnique(this, table, where)
+        .flatMap(_where => this.get(table, normalizedData, _where, fields))
+      }
 
       const schema = this[table] as Model.Table.Proto;
 
@@ -218,7 +258,7 @@ export function createModel(tables: Model.Table.Created[]) {
 
       // Cleans the where clause
       const clauses = cleanWhere(this, where, table);
-      
+
       /**
        * If there is a primary key,
        * Search the records for the primary key.
@@ -232,18 +272,33 @@ export function createModel(tables: Model.Table.Created[]) {
         let match = null
 
         // If this is the object instead of the primary key value
-        // Then do a deep search
-        if(typeof primaryKeyValue === "object") {
-          const tableName = schema.__relationship.__alias[schema.__pk];
-          match = this.get(tableName, normalizedData, primaryKeyValue, fields)
+        // Then it is a relation that contains the primary key
+        if (typeof primaryKeyValue === "object") {
+
+          // If the primary key is an object, then it is a relation
+          // So this relationship must exist
+          const relationTableName = schema.__relationship.__alias[schema.__pk];
+          const relation = (schema.__relationship[relationTableName] as Model.Table.Relationship.Proto);
+          const relationWhere = { [schema.__pk]: primaryKeyValue[relation.__pk] }
+
+          match = this.get(table, normalizedData, relationWhere, fields)
+
+          // const tableName = schema.__relationship.__alias[schema.__pk];
+          // match = this.get(tableName, normalizedData, primaryKeyValue, fields)
         }
 
         // If this is the primary key value
-        if(typeof primaryKeyValue !== "object") match = record[primaryKeyValue];
+        if (typeof primaryKeyValue !== "object") {
+          match = record[primaryKeyValue];
+          delete clauses[schema.__pk];
+        }
 
         if (!match) return null;
-        result = match;
-        delete clauses[schema.__pk];
+
+        // Set result to a new object here to 
+        // prevent normalizedData, state.cache from mutating...
+        // May need to track this and fix it at the root.
+        result = { ...match };
       }
 
 
@@ -256,6 +311,7 @@ export function createModel(tables: Model.Table.Created[]) {
         const clauseValues = clauses.__conditions.map(c => clauses[c])
         result = find(record, clauseKeys, clauseValues);
       }
+
 
       // There are several possiblilties here
       // 1. Result can be one object or an array
@@ -285,10 +341,19 @@ export function createModel(tables: Model.Table.Created[]) {
         // If results is not an array, do the same
         for (let ck = 0; ck < clauseKeys.length; ck++) {
           const ckKey = clauseKeys[ck];
-          const ckTable = (schema.__relationship[ckKey] as Model.Table.Relationship.Proto).__name;
+          const ckTable = (schema.__relationship[ckKey] as Model.Table.Relationship.Proto).__name
           const ckValue = clauseValues[ck];
-          const ckResult = this.get(ckTable, normalizedData, ckValue, fields)
-          result[ckKey] = this.get(ckTable, normalizedData, ckValue, fields)
+          const relationshipType = (schema as any)[ckKey];
+
+          if (relationshipType === "hasOne") {
+            result[ckKey] = this.get(ckTable, normalizedData, ckValue, fields)
+          }
+
+          if (relationshipType === "hasMany") {
+            result[ckKey] = Object
+              .values(ckValue)
+              .map((ckWhere: any) => this.get(ckTable, normalizedData, ckWhere, fields))
+          }
         }
       }
 
@@ -301,25 +366,6 @@ export function createModel(tables: Model.Table.Created[]) {
       if (clauses.__joins.length > 0) {
         const clauseKeys = clauses.__joins;
         const clauseValues = clauses.__joins.map(c => clauses[c] as Model.OperationProto)
-
-        // If there is a result and it is not an array
-        // Then find by join for one.
-        if (result && !Array.isArray(result)) {
-          const findResults = findByJoin(this, table, normalizedData, result, clauseKeys, clauseValues);
-          if (!findResults) return result;
-
-          for (let i = 0; i < clauseKeys.length; i++) {
-            const cKey = clauseKeys[i];
-            const cValue = clauseValues[i];
-            const found = findResults[cKey];
-
-            // If there is no match and it is not a *, then remove the record
-            if (!found && cValue.__on !== "*") return result;
-            result[cKey] = findResults[cKey];
-          }
-
-          return result
-        }
 
         // If there is no result,
         // then we will return an array of object that match
@@ -345,7 +391,75 @@ export function createModel(tables: Model.Table.Created[]) {
               return result
             })
         }
+
+
+        // If there is a result and it is not an array
+        // Then find by join for one.
+        if (result && !Array.isArray(result)) {
+          const findResults = findByJoin(this, table, normalizedData, result, clauseKeys, clauseValues);
+          if (!findResults) return result;
+
+          for (let i = 0; i < clauseKeys.length; i++) {
+            const cKey = clauseKeys[i];
+            const cValue = clauseValues[i];
+            const found = findResults[cKey];
+
+            // If there is no match and it is not a *, then remove the record
+            if (!found && cValue.__on !== "*") return result;
+            result[cKey] = findResults[cKey];
+          }
+
+          return result
+        }
+
+
+        // If there is a result and it is an array
+        if (result && Array.isArray(result)) {
+
+          const validatedResults = [];
+
+          for (let r = 0; r < result.length; r++) {
+            const _result = result[r];
+            const findResults = findByJoin(this, table, normalizedData, _result, clauseKeys, clauseValues);
+            if (!findResults) return result;
+
+            let current = null;
+            for (let i = 0; i < clauseKeys.length; i++) {
+              const cKey = clauseKeys[i];
+              const cValue = clauseValues[i];
+              const found = findResults[cKey];
+
+              // If there is no match and it is not a *, then remove the record
+              if (!found && cValue.__on !== "*") {
+                current = null;
+                break;
+              }
+
+              result[r][cKey] = findResults[cKey];
+              current = result[r]
+            }
+
+            if (current) validatedResults.push(current)
+          }
+
+          return validatedResults
+        }
+
       }
+
+
+      // If the we have specified the fields we want to retrieve
+      if (fields) {
+
+        if (Array.isArray(result)) {
+          for (let i = 0; i < result.length; i++) fields[table] && filterSelectedFields(result[i], fields[table])
+        }
+
+        if (typeof result === "object") {
+          fields[table] && filterSelectedFields(result, fields[table])
+        }
+      }
+
 
       return result
     },
