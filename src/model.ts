@@ -189,7 +189,7 @@ export function createModel(tables: Model.Table.Created[]) {
   }
 
 
-  function findByJoin(self: Model.Proto, table: string, normalizedData: any, record: Record<string, any>, fKey: string[], fValue: any[]) {
+  function findByJoin(self: Model.Proto, table: string, normalizedData: any, record: Record<string, any>, fKey: string[], fValue: any[], fields: Record<string, string[]> | null) {
 
     const schema = self[table] as Model.Table.Proto;
 
@@ -239,7 +239,11 @@ export function createModel(tables: Model.Table.Created[]) {
         if (!result) result = {};
         result[cKey] = record[cKey]
       }
+
+      // Filter the fields based on fields selected.
+      if (result && fields && result[cKey]) keepSelectedFields(cKey, result[cKey], fields)
     }
+
 
     return result;
   }
@@ -250,6 +254,17 @@ export function createModel(tables: Model.Table.Created[]) {
       if (!Object.prototype.hasOwnProperty.call(record, key)) continue;
       if (select.includes(key)) continue;
       delete record[key];
+    }
+  }
+
+
+  function keepSelectedFields(table: string, result: Record<string, any>, fields: Record<string, string[]>) {
+    if (Array.isArray(result)) {
+      for (let i = 0; i < result.length; i++) fields[table] && filterSelectedFields(result[i], fields[table])
+    }
+
+    if (!Array.isArray(result) && typeof result === "object") {
+      fields[table] && filterSelectedFields(result, fields[table])
     }
   }
 
@@ -441,8 +456,10 @@ export function createModel(tables: Model.Table.Created[]) {
         // Then find by join for one.
         if (result && !Array.isArray(result)) {
 
-          const findResults = findByJoin(this, table, normalizedData, result, clauseKeys, clauseValues);
+          const findResults = findByJoin(this, table, normalizedData, result, clauseKeys, clauseValues, fields);
           if (!findResults) return null;
+
+          // console.log(this.get(table, normalizedData, ))
 
           for (let i = 0; i < clauseKeys.length; i++) {
             const cKey = clauseKeys[i];
@@ -462,7 +479,7 @@ export function createModel(tables: Model.Table.Created[]) {
 
           for (let r = 0; r < result.length; r++) {
             const _result = result[r];
-            const findResults = findByJoin(this, table, normalizedData, _result, clauseKeys, clauseValues);
+            const findResults = findByJoin(this, table, normalizedData, _result, clauseKeys, clauseValues, fields);
 
             if (!findResults) continue;
 
@@ -491,11 +508,12 @@ export function createModel(tables: Model.Table.Created[]) {
         // If there is no result,
         // then we will return an array of object that match
         if (!result) {
+
           result = Object
             .values(record)
             .flatMap((res: any) => {
 
-              const findResults = findByJoin(this, table, normalizedData, res, clauseKeys, clauseValues);
+              const findResults = findByJoin(this, table, normalizedData, res, clauseKeys, clauseValues, fields);
               if (!findResults) return []
 
               for (let i = 0; i < clauseKeys.length; i++) {
@@ -515,16 +533,7 @@ export function createModel(tables: Model.Table.Created[]) {
 
 
       // If the we have specified the fields we want to retrieve
-      if (fields) {
-
-        if (Array.isArray(result)) {
-          for (let i = 0; i < result.length; i++) fields[table] && filterSelectedFields(result[i], fields[table])
-        }
-
-        if (typeof result === "object") {
-          fields[table] && filterSelectedFields(result, fields[table])
-        }
-      }
+      if (fields) keepSelectedFields(table, result, fields)
 
 
       return result
