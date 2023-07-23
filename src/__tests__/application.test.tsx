@@ -2739,9 +2739,11 @@ describe("useInfiniteQuery hook", () => {
       model
     })
 
+    const original = JSON.parse(JSON.stringify(cache))
+
     const r1 = model.get(
       "post",
-      JSON.parse(JSON.stringify(cache)),
+      cache,
       {
         id: 10,
         images: {
@@ -2761,7 +2763,7 @@ describe("useInfiniteQuery hook", () => {
 
     const r2 = model.get(
       "post",
-      JSON.parse(JSON.stringify(cache)),
+      cache,
       {
         id: 10,
         images: operation.join()
@@ -2778,7 +2780,7 @@ describe("useInfiniteQuery hook", () => {
 
     const r3 = model.get(
       "post",
-      JSON.parse(JSON.stringify(cache)),
+      cache,
       {
         id: 10,
         images: {
@@ -2798,7 +2800,7 @@ describe("useInfiniteQuery hook", () => {
 
     const r4 = model.get(
       "post",
-      JSON.parse(JSON.stringify(cache)),
+      cache,
       {
         id: 10,
         images: {
@@ -2817,7 +2819,7 @@ describe("useInfiniteQuery hook", () => {
 
     const r5 = model.get(
       "post",
-      JSON.parse(JSON.stringify(cache)),
+      cache,
       {
         id: 10,
         images: [{ id: 43 }, { id: 44 }]
@@ -2830,6 +2832,8 @@ describe("useInfiniteQuery hook", () => {
     )
 
     expect(r5).toMatchSnapshot("Join on hasMany field, multiple by force");
+
+    expect(cache).toStrictEqual(original)
   });
 
 })

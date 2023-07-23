@@ -220,7 +220,7 @@ export function createModel(tables: Model.Table.Created[]) {
           // If the value is valid add it to results
           if (operation === "*" || operation(value, record)) {
             if (!result) result = {};
-            result[cKey] = value
+            result[cKey] = { ...value }
           }
         }
 
@@ -230,7 +230,7 @@ export function createModel(tables: Model.Table.Created[]) {
           for (let i = 0; i < record[cKey].length; i++) {
             const primaryKey = record[cKey][i];
             const row = data[primaryKey];
-            if (row) values.push(row);
+            if (row) values.push({ ...row });
           }
 
           // If the value is valid add it to results
@@ -243,9 +243,8 @@ export function createModel(tables: Model.Table.Created[]) {
 
       // If the value is valid add it to results
       if (!relation && (operation === "*" || operation(record[cKey], record))) {
-
         if (!result) result = {};
-        result[cKey] = record[cKey]
+        result[cKey] = { ...record[cKey] }
       }
 
       // Filter the fields based on fields selected.
@@ -379,7 +378,7 @@ export function createModel(tables: Model.Table.Created[]) {
 
           // May be an array or a single value
           // Depends on if this relationship was a hasOne or hasMany.
-          const selected = !hasMany ? record[primaryKeys] : primaryKeys.map(pk => record[pk]);
+          const selected = !hasMany ? { ...record[primaryKeys] } : primaryKeys.map(pk => ({ ...record[pk] }));
 
           // If we are joining on *, set the value regardless
           if (primaryKeyValue.__on === "*") match = selected;
@@ -406,7 +405,7 @@ export function createModel(tables: Model.Table.Created[]) {
 
         // If this is the primary key value
         if (typeof primaryKeyValue !== "object") {
-          match = record[primaryKeyValue];
+          match = { ...record[primaryKeyValue] };
           delete clauses[schema.__pk];
         }
 
@@ -414,7 +413,7 @@ export function createModel(tables: Model.Table.Created[]) {
 
         // Set result to a new object here to 
         // prevent normalizedData, state.cache from mutating...
-        result = Array.isArray(match) ? [...match] : { ...match };
+        result = match;
       }
 
       // If there are conditions
