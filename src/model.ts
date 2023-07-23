@@ -227,24 +227,45 @@ export function createModel(tables: Model.Table.Created[]) {
         if (relationshipType === "hasMany") {
           const values = [];
 
-          for (let i = 0; i < record[cKey].length; i++) {
-            const primaryKey = record[cKey][i];
-            const row = data[primaryKey];
-            if (row) values.push({ ...row });
+          // TODO
+          // Not sure why this can happen,
+          // need to create a test to trigger this
+          //
+          // console.log(cKey, result, record)
+          // thumbnails null {}
+          if (!record[cKey]) {
+            if (!result) result = {};
+            result[cKey] = []
           }
 
-          // If the value is valid add it to results
-          if (operation === "*" || operation(values, record)) {
-            if (!result) result = {};
-            result[cKey] = values
+          if (record[cKey]) {
+
+            for (let i = 0; i < record[cKey].length; i++) {
+              const primaryKey = record[cKey][i];
+              const row = data[primaryKey];
+              if (row) values.push({ ...row });
+            }
+
+            // If the value is valid add it to results
+            if (operation === "*" || operation(values, record)) {
+              if (!result) result = {};
+              result[cKey] = values
+            }
           }
+
         }
       }
 
       // If the value is valid add it to results
       if (!relation && (operation === "*" || operation(record[cKey], record))) {
         if (!result) result = {};
-        result[cKey] = { ...record[cKey] }
+        const value = record[cKey];
+
+        // I expect value to be a string or a number
+        // We come here when you use operation.join()
+        // on a field that is not a relation or a primary key
+        // So the value should mostly be a primitive.
+        result[cKey] = typeof value === "object" ? { ...value } : value
       }
 
       // Filter the fields based on fields selected.
@@ -491,8 +512,6 @@ export function createModel(tables: Model.Table.Created[]) {
 
           const findResults = findByJoin(this, table, normalizedData, result, clauseKeys, clauseValues, fields);
           if (!findResults) return null;
-
-          // console.log(this.get(table, normalizedData, ))
 
           for (let i = 0; i < clauseKeys.length; i++) {
             const cKey = clauseKeys[i];
