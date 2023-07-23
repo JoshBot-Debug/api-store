@@ -138,7 +138,7 @@ export declare namespace Model {
      * @returns A boolean, true to join, false to not
      * @default *
      */
-    join: (on?: ((value: any, record: Record<string, any>) => boolean) | "*") => string;
+    join: (on?: ((value: any, record: Record<string, any>) => boolean) | "*") => any;
 
   }
 
@@ -152,5 +152,9 @@ export declare namespace Model {
     __joins: Keys[];
     __relations: Keys[];
     __hasPrimaryKey: Record<Keys, boolean>;
+  }
+
+  interface ParentRef extends extends Record<string, any> {
+    __parentValue: any;
   }
 }

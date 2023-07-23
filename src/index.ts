@@ -1,5 +1,5 @@
 import APIStore from "./APIStore";
-import { createModel, createTable } from "./model";
+import { createModel, createTable, operation } from "./model";
 import { useInfiniteQuery } from "./useInfiniteQuery";
 import { useMutation } from "./useMutation";
 import { useQuery } from "./useQuery";
@@ -10,6 +10,7 @@ export {
   APIStore,
   createTable,
   createModel,
+  operation,
   useMutation,
   useInfiniteQuery,
   useQuery
