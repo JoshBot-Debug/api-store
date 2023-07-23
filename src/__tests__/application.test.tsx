@@ -1004,7 +1004,7 @@ describe("useInfiniteQuery hook", () => {
   });
 
 
-  it("Pagination larger model", async () => {
+  it("Join tests", async () => {
 
     const user = createTable("user", { id: "number" })
     const image = createTable("image", { id: "number" })
@@ -2739,14 +2739,14 @@ describe("useInfiniteQuery hook", () => {
       model
     })
 
-    const result = model.get(
+    const r1 = model.get(
       "post",
       JSON.parse(JSON.stringify(cache)),
       {
         id: 10,
         images: {
           id: operation.join(),
-          thumbnails: operation.join()
+          thumbnails: operation.join(),
         }
       },
       {
@@ -2755,62 +2755,81 @@ describe("useInfiniteQuery hook", () => {
         thumbnails: ["id", "height"],
       }
     )
-    // operation.join()
 
-    console.log(result.images[0])
-
-
-    // console.log(result?.user.profileImage)
+    expect(r1).toMatchSnapshot("Join on hasMany field with another hasMany field");
 
 
-    // const fetch = async (...args: any[]) => {
-    //   // const next = args[0];
-    //   // if (next) return Promise.resolve(data2)
-    //   return Promise.resolve({
-    //     comments: [...data1.comments, ...data3.comments],
-    //     nextParams: data1.nextParams
-    //   })
-    // };
+    const r2 = model.get(
+      "post",
+      JSON.parse(JSON.stringify(cache)),
+      {
+        id: 10,
+        images: operation.join()
+      },
+      {
+        post: ["id", "images", "user"],
+        images: ["id", "thumbnails"],
+        thumbnails: ["id", "height"],
+      }
+    )
 
-    // const { result } = renderHook(() => (
-    //   useInfiniteQuery({
-    //     table: "postComment",
-    //     get: {
-    //       fetch: (nextParams: any) => fetch(nextParams),
-    //       where: {
-    //         postId: 10,
-    //         replyingToId: operation.join(v => v === null),
-    //         user: {
-    //           id: operation.join(),
-    //           profileImage: {
-    //             id: operation.join(),
-    //             thumbnails: operation.join()
-    //           }
-    //         }
-    //       }
-    //     },
-    //     getData: result => result.comments,
-    //     getNextPageParams: result => result.nextParams,
-    //     getNextPageKey: result => result.nextParams?.createdAt,
-    //   })
-    // ), { wrapper: largeWrapper });
-
-    // await waitFor(() => {
-    //   expect(result.current.result).toBe(null)
-    // })
+    expect(r1).toMatchSnapshot("Join on hasMany field");
 
 
-    // await waitFor(() => {
-    //   expect(result.current.result.length).toBe(10)
-    // })
+    const r3 = model.get(
+      "post",
+      JSON.parse(JSON.stringify(cache)),
+      {
+        id: 10,
+        images: {
+          id: operation.join()
+        }
+      },
+      {
+        post: ["id", "images", "user"],
+        images: ["id", "thumbnails"],
+        thumbnails: ["id", "height"],
+      }
+    )
 
-    // await act(() => result.current.fetchNextPage())
+    expect(r3).toMatchSnapshot("Join on hasMany field alt way");
 
-    // await waitFor(() => {
-    //   console.log(result.current.result[result.current.result.length - 1])
-    //   expect(result.current.result.length).toBe(20)
-    // })
 
+
+    const r4 = model.get(
+      "post",
+      JSON.parse(JSON.stringify(cache)),
+      {
+        id: 10,
+        images: {
+          id: 43
+        }
+      },
+      {
+        post: ["id", "images", "user"],
+        images: ["id", "thumbnails"],
+        thumbnails: ["id", "height"],
+      }
+    )
+
+    expect(r4).toMatchSnapshot("Join on hasMany field by force");
+
+
+    const r5 = model.get(
+      "post",
+      JSON.parse(JSON.stringify(cache)),
+      {
+        id: 10,
+        images: [{ id: 43 }, { id: 44 }]
+      },
+      {
+        post: ["id", "images", "user"],
+        images: ["id", "thumbnails"],
+        thumbnails: ["id", "height"],
+      }
+    )
+
+    expect(r5).toMatchSnapshot("Join on hasMany field, multiple by force");
   });
 
 })

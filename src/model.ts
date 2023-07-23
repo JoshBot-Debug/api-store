@@ -417,7 +417,6 @@ export function createModel(tables: Model.Table.Created[]) {
         result = Array.isArray(match) ? [...match] : { ...match };
       }
 
-
       // If there are conditions
       // Then there was no primary key
       // Find all the records that match the conditions
@@ -470,6 +469,12 @@ export function createModel(tables: Model.Table.Created[]) {
         }
 
       }
+
+
+      // If the we have specified the fields we want to retrieve
+      // Cleaning must be done before joining
+      // Once the join happens, fields will not match because the object is joint to the parent
+      if (fields) keepSelectedFields(where?.__parentField ?? table, result, fields)
 
 
       // If it is a join, there are 3 possiblities
@@ -559,10 +564,6 @@ export function createModel(tables: Model.Table.Created[]) {
             })
         }
       }
-
-
-      // If the we have specified the fields we want to retrieve
-      if (fields) keepSelectedFields(where?.__parentField ?? table, result, fields)
 
       return result
     },

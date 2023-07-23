@@ -1,0 +1,314 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`useInfiniteQuery hook Join tests: Join on hasMany field 1`] = `
+Object {
+  "id": 10,
+  "images": Array [
+    Object {
+      "id": 54,
+      "thumbnails": Array [
+        Object {
+          "height": 128,
+          "id": 206,
+        },
+        Object {
+          "height": 256,
+          "id": 207,
+        },
+        Object {
+          "height": 512,
+          "id": 208,
+        },
+        Object {
+          "height": 720,
+          "id": 209,
+        },
+        Object {
+          "height": 1728,
+          "id": 210,
+        },
+      ],
+    },
+    Object {
+      "id": 55,
+      "thumbnails": Array [
+        Object {
+          "height": 128,
+          "id": 211,
+        },
+        Object {
+          "height": 256,
+          "id": 212,
+        },
+        Object {
+          "height": 512,
+          "id": 213,
+        },
+        Object {
+          "height": 720,
+          "id": 214,
+        },
+        Object {
+          "height": 1656,
+          "id": 215,
+        },
+      ],
+    },
+    Object {
+      "id": 56,
+      "thumbnails": Array [
+        Object {
+          "height": 128,
+          "id": 216,
+        },
+        Object {
+          "height": 256,
+          "id": 217,
+        },
+        Object {
+          "height": 512,
+          "id": 218,
+        },
+        Object {
+          "height": 720,
+          "id": 219,
+        },
+        Object {
+          "height": 1728,
+          "id": 220,
+        },
+      ],
+    },
+    Object {
+      "id": 57,
+      "thumbnails": Array [
+        Object {
+          "height": 128,
+          "id": 221,
+        },
+        Object {
+          "height": 256,
+          "id": 222,
+        },
+        Object {
+          "height": 512,
+          "id": 223,
+        },
+        Object {
+          "height": 720,
+          "id": 224,
+        },
+        Object {
+          "height": 1728,
+          "id": 225,
+        },
+      ],
+    },
+  ],
+  "user": 2,
+}
+`;
+
+exports[`useInfiniteQuery hook Join tests: Join on hasMany field alt way 1`] = `
+Object {
+  "id": 10,
+  "images": Array [
+    Object {
+      "id": 54,
+      "thumbnails": Array [
+        206,
+        207,
+        208,
+        209,
+        210,
+      ],
+    },
+    Object {
+      "id": 55,
+      "thumbnails": Array [
+        211,
+        212,
+        213,
+        214,
+        215,
+      ],
+    },
+    Object {
+      "id": 56,
+      "thumbnails": Array [
+        216,
+        217,
+        218,
+        219,
+        220,
+      ],
+    },
+    Object {
+      "id": 57,
+      "thumbnails": Array [
+        221,
+        222,
+        223,
+        224,
+        225,
+      ],
+    },
+  ],
+  "user": 2,
+}
+`;
+
+exports[`useInfiniteQuery hook Join tests: Join on hasMany field by force 1`] = `
+Object {
+  "id": 10,
+  "images": Object {
+    "id": 43,
+    "thumbnails": Array [
+      161,
+      162,
+      163,
+      164,
+      165,
+    ],
+  },
+  "user": 2,
+}
+`;
+
+exports[`useInfiniteQuery hook Join tests: Join on hasMany field with another hasMany field 1`] = `
+Object {
+  "id": 10,
+  "images": Array [
+    Object {
+      "id": 54,
+      "thumbnails": Array [
+        Object {
+          "height": 128,
+          "id": 206,
+        },
+        Object {
+          "height": 256,
+          "id": 207,
+        },
+        Object {
+          "height": 512,
+          "id": 208,
+        },
+        Object {
+          "height": 720,
+          "id": 209,
+        },
+        Object {
+          "height": 1728,
+          "id": 210,
+        },
+      ],
+    },
+    Object {
+      "id": 55,
+      "thumbnails": Array [
+        Object {
+          "height": 128,
+          "id": 211,
+        },
+        Object {
+          "height": 256,
+          "id": 212,
+        },
+        Object {
+          "height": 512,
+          "id": 213,
+        },
+        Object {
+          "height": 720,
+          "id": 214,
+        },
+        Object {
+          "height": 1656,
+          "id": 215,
+        },
+      ],
+    },
+    Object {
+      "id": 56,
+      "thumbnails": Array [
+        Object {
+          "height": 128,
+          "id": 216,
+        },
+        Object {
+          "height": 256,
+          "id": 217,
+        },
+        Object {
+          "height": 512,
+          "id": 218,
+        },
+        Object {
+          "height": 720,
+          "id": 219,
+        },
+        Object {
+          "height": 1728,
+          "id": 220,
+        },
+      ],
+    },
+    Object {
+      "id": 57,
+      "thumbnails": Array [
+        Object {
+          "height": 128,
+          "id": 221,
+        },
+        Object {
+          "height": 256,
+          "id": 222,
+        },
+        Object {
+          "height": 512,
+          "id": 223,
+        },
+        Object {
+          "height": 720,
+          "id": 224,
+        },
+        Object {
+          "height": 1728,
+          "id": 225,
+        },
+      ],
+    },
+  ],
+  "user": 2,
+}
+`;
+
+exports[`useInfiniteQuery hook Join tests: Join on hasMany field, multiple by force 1`] = `
+Object {
+  "id": 10,
+  "images": Array [
+    Object {
+      "id": 43,
+      "thumbnails": Array [
+        161,
+        162,
+        163,
+        164,
+        165,
+      ],
+    },
+    Object {
+      "id": 44,
+      "thumbnails": Array [
+        166,
+        167,
+        168,
+        169,
+        170,
+      ],
+    },
+  ],
+  "user": 2,
+}
+`;
