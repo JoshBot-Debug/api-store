@@ -116,7 +116,7 @@ export function createModel(tables: Model.Table.Created[]) {
         // the record will have a primary key here
         // User {id: 10, username: "john", profile: 10 // pk }
         // Where {id: 10, profile: { id: operation.join() }}
-        if ((value as Model.OperationProto).__isJoin) {
+        if ((value as Model.OperationProto)?.__isJoin) {
           (result as Model.Where<string>).__hasPrimaryKey[table] = true;
           continue;
         }
@@ -270,9 +270,9 @@ export function createModel(tables: Model.Table.Created[]) {
   }
 
 
-  function applyParentRef(where: Record<string, any>, parentValue: any) {
+  function applyParentRef(where: Record<string, any>, value: any) {
     Object.setPrototypeOf(where, {
-      __parentValue: parentValue,
+      __parentValue: value,
     })
   }
 
@@ -437,30 +437,6 @@ export function createModel(tables: Model.Table.Created[]) {
         const clauseKeys = clauses.__joins;
         const clauseValues = clauses.__joins.map(c => clauses[c] as Model.OperationProto)
 
-        // If there is no result,
-        // then we will return an array of object that match
-        if (!result) {
-          result = Object
-            .values(record)
-            .flatMap((res: any) => {
-
-              const findResults = findByJoin(this, table, normalizedData, res, clauseKeys, clauseValues);
-              if (!findResults) return []
-
-              for (let i = 0; i < clauseKeys.length; i++) {
-                const cKey = clauseKeys[i];
-                const cValue = clauseValues[i];
-
-                // If there is no match and it is not a *, then remove the record
-                if (!(cKey in findResults) && cValue.__on !== "*") return [];
-
-                res[cKey] = findResults[cKey];
-              }
-
-              return res
-            })
-        }
-
         // If there is a result and it is not an array
         // Then find by join for one.
         if (result && !Array.isArray(result)) {
@@ -511,6 +487,30 @@ export function createModel(tables: Model.Table.Created[]) {
           return validatedResults
         }
 
+
+        // If there is no result,
+        // then we will return an array of object that match
+        if (!result) {
+          result = Object
+            .values(record)
+            .flatMap((res: any) => {
+
+              const findResults = findByJoin(this, table, normalizedData, res, clauseKeys, clauseValues);
+              if (!findResults) return []
+
+              for (let i = 0; i < clauseKeys.length; i++) {
+                const cKey = clauseKeys[i];
+                const cValue = clauseValues[i];
+
+                // If there is no match and it is not a *, then remove the record
+                if (!(cKey in findResults) && cValue.__on !== "*") return [];
+
+                res[cKey] = findResults[cKey];
+              }
+
+              return res
+            })
+        }
       }
 
 
@@ -526,7 +526,7 @@ export function createModel(tables: Model.Table.Created[]) {
         }
       }
 
-      
+
       return result
     },
   })
