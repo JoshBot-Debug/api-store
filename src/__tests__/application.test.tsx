@@ -2083,31 +2083,19 @@ describe("useInfiniteQuery hook", () => {
       model
     })
 
-
-    const copy = { ...cache }
-
-    console.log("Before", cache['postComment'][40].user, copy['postComment'][40].user)
-
-
-    model.get(
+    const result = model.get(
       "postComment",
       JSON.parse(JSON.stringify(cache)),
       {
-        postId: 10,
-        replyingToId: operation.join(v => v === null),
-        user: {
-          id: operation.join(),
-          profileImage: {
-            id: operation.join(),
-            thumbnails: operation.join()
-          }
-        }
+        id: 30,
+        user: operation.join()
       },
-      null
+      {
+        user: ["id", "username"],
+        postComment: ["user", "createdAt"],
+      }
     )
 
-
-    console.log("After", cache['postComment'][40].user,  copy['postComment'][40].user)
 
     // const fetch = async (...args: any[]) => {
     //   // const next = args[0];

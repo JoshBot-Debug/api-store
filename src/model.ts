@@ -329,6 +329,7 @@ export function createModel(tables: Model.Table.Created[]) {
       // Cleans the where clause
       const clauses = cleanWhere(this, where, table);
 
+
       /**
        * If there is a primary key,
        * Search the records for the primary key.
@@ -357,9 +358,6 @@ export function createModel(tables: Model.Table.Created[]) {
           const relationWhere = { [schema.__pk]: primaryKeyValue[relation.__pk] }
 
           match = this.get(table, normalizedData, relationWhere, fields)
-
-          // const tableName = schema.__relationship.__alias[schema.__pk];
-          // match = this.get(tableName, normalizedData, primaryKeyValue, fields)
         }
 
         // If this is the primary key value
@@ -475,11 +473,9 @@ export function createModel(tables: Model.Table.Created[]) {
             const cValue = clauseValues[i];
 
             // If there is no match and it is not a *, then remove the record
-            if (!(cKey in findResults) && cValue.__on !== "*") return result;
+            if (!(cKey in findResults) && cValue.__on !== "*") continue;
             result[cKey] = findResults[cKey];
           }
-
-          return result
         }
 
 
@@ -530,6 +526,7 @@ export function createModel(tables: Model.Table.Created[]) {
         }
       }
 
+      
       return result
     },
   })
