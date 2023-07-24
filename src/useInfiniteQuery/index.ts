@@ -33,7 +33,7 @@ export function useInfiniteQuery<
 
   const context = useContext<UseAPIStore.Context<Data>>(APIStoreContext as any);
 
-  
+
   const [where, setWhere] = useState<UseAPIStore.WhereClause<Data[] | Data>>(
     _where
       ? _where
@@ -62,13 +62,13 @@ export function useInfiniteQuery<
     dispatch({ type: "nextPageParams", payload: { nextPageKey, nextPageParams } });
     const where = _where ?? data;
     setWhere((prev) => {
-      if(Array.isArray(prev) && Array.isArray(where)) return [...prev, ...where]
+      if (Array.isArray(prev) && Array.isArray(where)) return [...prev, ...where]
       return where
     })
     context.upsert({ table, data });
     return data;
   }
-  
+
 
   async function onMount() {
     try {
@@ -97,6 +97,15 @@ export function useInfiniteQuery<
     if (!fetch) throw new Error("You cannot call refetch without passing a fetch function to the hook.");
     try {
       dispatch({ type: "isFetching", payload: true });
+      const fetchResult = await fetch(nextParams);
+      const data = getData(fetchResult);
+      const nextPageParams = getNextPageParams(fetchResult);
+      const nextPageKey = getNextPageKey(fetchResult);
+      if (!nextPageParams || !nextPageKey) dispatch({ type: "hasNextPage", payload: false });
+      dispatch({ type: "nextPageParams", payload: { nextPageKey, nextPageParams } });
+      const where = _where ?? data;
+      setWhere(where);
+      context.upsert({ table, data });
       return await fetchSetAndGet(nextParams);
     }
     catch (error) {

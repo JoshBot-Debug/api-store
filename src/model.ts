@@ -107,8 +107,7 @@ export function createModel(tables: Model.Table.Created[]) {
     for (let i = 0; i < clauses.length; i++) {
       const [key, value] = clauses[i];
 
-
-
+      
       // If this is the primary key, don't remove it
       if (key === schema.__pk) {
 
@@ -117,7 +116,7 @@ export function createModel(tables: Model.Table.Created[]) {
         // the record will have a primary key here
         // User {id: 10, username: "john", profile: 10 // pk }
         // Where {id: 10, profile: { id: operation.join() }}
-        if ((value as Model.OperationProto)?.__isJoin) {
+        if ((value as Model.OperationProto).__isJoin) {
           (result as Model.Where<string>).__hasPrimaryKey[table] = true;
           continue;
         }
@@ -145,7 +144,7 @@ export function createModel(tables: Model.Table.Created[]) {
 
 
       // If this value is a join, continue
-      if ((value as Model.OperationProto)?.__isJoin) {
+      if ((value as Model.OperationProto).__isJoin) {
 
         // This is a join, it should be performed last
         (result as Model.Where<string>).__joins.push(key);
