@@ -1,5 +1,6 @@
 # Todo
 
+- ***BUG FIX*** useInfiniteQuery, when refreshing with data, on android there is a bug, for now use a join to
 - ***Possible feature?*** May want to replace context with an external store
 
 # API store

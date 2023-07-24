@@ -36,7 +36,6 @@ export default function APIStore(props: APIStoreProps) {
 
   const get: Context["get"] = (table, where, fields) => {
     if (!where) return null;
-
     // TODO need to find out where the value is mutating and remove this.
     return model.get(table, state.cache, where, fields);
   }

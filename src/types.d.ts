@@ -93,7 +93,6 @@ export declare namespace Model {
       where: Record<string, any> | Record<string, any>[],
       fields: Record<string, string[]> | null,
     ) => T | null;
-    filterUnique: <Data>(table: string, data: Data[]) => Data[]
   }
 
   type Proto<T = Table.Created> = Model<T> & Prototype<T>;

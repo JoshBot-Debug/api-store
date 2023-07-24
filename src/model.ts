@@ -107,10 +107,9 @@ export function createModel(tables: Model.Table.Created[]) {
     for (let i = 0; i < clauses.length; i++) {
       const [key, value] = clauses[i];
 
-      
+
       // If this is the primary key, don't remove it
       if (key === schema.__pk) {
-
 
         // This is a join on a primary key,
         // the record will have a primary key here
@@ -165,14 +164,20 @@ export function createModel(tables: Model.Table.Created[]) {
 
         (result as Model.Where<string>).__relations.push(key);
 
-        const clean = cleanWhere(self, result[key], schema.__relationship.__alias[key]);;
+        if ((schema as any)[key] === "hasMany") {
 
-        if (Array.isArray(result[key])) {
-          result[key] = Object.values(clean);
-          continue;
+          // This is a an array of objects
+          // If its not an array then it is probably a single object
+          // We can handle that, it's most likely a join operation
+          // images: { postId: operation.join(id => [1,2,3].includes(id)), thumbnails: operation.join() }
+          if (Array.isArray(result[key])) {
+            result[key] = result[key].map((row: any) => cleanWhere(self, row, schema.__relationship.__alias[key]))
+            continue;
+          }
         }
 
-        result[key] = clean;
+        // hasOne Relationship
+        result[key] = cleanWhere(self, result[key], schema.__relationship.__alias[key]);
         continue;
       }
 
@@ -355,8 +360,9 @@ export function createModel(tables: Model.Table.Created[]) {
 
       // If our where clause is an array, map over it and get the values
       if (Array.isArray(where)) {
+
         return filterUnique(this, table, where)
-          .flatMap(_where => this.get(table, normalizedData, _where, fields))
+          .flatMap(_where => this.get(table, normalizedData, _where, fields) ?? [])
       }
 
       const schema = this[table] as Model.Table.Proto;
@@ -372,7 +378,6 @@ export function createModel(tables: Model.Table.Created[]) {
 
       // Cleans the where clause
       const clauses = cleanWhere(this, where, table);
-
 
       /**
        * If there is a primary key,
@@ -401,7 +406,7 @@ export function createModel(tables: Model.Table.Created[]) {
           const selected = !hasMany ? { ...record[primaryKeys] } : primaryKeys.map(pk => ({ ...record[pk] }));
 
           // If we are joining on *, set the value regardless
-          if (primaryKeyValue.__on === "*") match = selected;
+          if (primaryKeyValue.__on === "*" && selected) match = selected;
 
           // If we are joining on a function, check for true
           if (
@@ -419,13 +424,16 @@ export function createModel(tables: Model.Table.Created[]) {
           const relationTableName = schema.__relationship.__alias[schema.__pk];
           const relation = (schema.__relationship[relationTableName] as Model.Table.Relationship.Proto);
           const relationWhere = { [schema.__pk]: primaryKeyValue[relation.__pk] }
+          const row = this.get(table, normalizedData, relationWhere, fields);
 
-          match = this.get(table, normalizedData, relationWhere, fields)
+          if (row) match = row;
         }
 
         // If this is the primary key value
         if (typeof primaryKeyValue !== "object") {
-          match = { ...record[primaryKeyValue] };
+          const row = record[primaryKeyValue];
+
+          if (row) match = { ...row };
           delete clauses[schema.__pk];
         }
 
@@ -442,7 +450,7 @@ export function createModel(tables: Model.Table.Created[]) {
       // return them in an array
       if (clauses.__conditions.length > 0) {
         const clauseKeys = clauses.__conditions;
-        const clauseValues = clauses.__conditions.map(c => clauses[c])
+        const clauseValues = clauses.__conditions.map((c: string) => clauses[c])
         result = find(record, clauseKeys, clauseValues);
       }
 
@@ -454,7 +462,7 @@ export function createModel(tables: Model.Table.Created[]) {
       if (clauses.__relations.length > 0) {
         if (!result) result = {};
         const clauseKeys = clauses.__relations;
-        const clauseValues = clauses.__relations.map(c => clauses[c])
+        const clauseValues = clauses.__relations.map((c: string) => clauses[c])
 
         // If result is an array
         // The where clause did not contain a primary key, instead it contained conditions.
@@ -503,7 +511,7 @@ export function createModel(tables: Model.Table.Created[]) {
       // 5. Result could be an object, an array or it could not exist.
       if (clauses.__joins.length > 0) {
         const clauseKeys = clauses.__joins;
-        const clauseValues = clauses.__joins.map(c => clauses[c] as Model.OperationProto)
+        const clauseValues = clauses.__joins.map((c: string) => clauses[c] as Model.OperationProto)
 
         // If there is a result and it is not an array
         // Then find by join for one.
