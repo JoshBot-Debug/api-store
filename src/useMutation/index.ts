@@ -37,7 +37,11 @@ export function useMutation<Result, Data, Args extends Array<any>>(
 
       if (extractor) {
         const tables = Object.keys(extractor);
-        const payload = tables.map(table => ({ table, data: extractor[table](result) }))
+        const payload = tables.flatMap(table => {
+          const data = extractor[table](result);
+          if (data === undefined) return []
+          return { table, data }
+        })
         context.upsert(payload);
       }
 
