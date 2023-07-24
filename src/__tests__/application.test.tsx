@@ -43,11 +43,23 @@ type User = {
   gender: string;
   dob: string;
   token?: Token | number;
+  profileImage?: Image | number,
+  bannerImage?: Image | number,
 }
 
 type Token = {
   user: User | number;
   token: string;
+}
+
+type Image = {
+  id: number;
+  thumbnails: Thumbnail[] | number[]
+}
+
+type Thumbnail = {
+  id: number;
+  src: string;
 }
 
 const token = createTable("token", {}, { pk: "user" })
@@ -432,6 +444,48 @@ describe("useQuery hook tests", () => {
     ), { wrapper });
 
     expect(result.current.result).toStrictEqual(Object.values(users));
+  });
+
+
+  it("useQuery with operation", async () => {
+
+    const data = {
+      id: 10,
+      username: "Joshua",
+      email: "joshua@gmail.com",
+      gender: "male",
+      dob: "21-02-1998",
+      profileImage: {
+        id: 1,
+        thumbnails: [{ id: 1, src: "img1" }, { id: 2, src: "img2" }]
+      }
+    }
+
+    const { result } = renderHook(() => (
+      useQuery({
+        table: "user",
+        get: {
+          result: data,
+          where: {
+            id: 10,
+            profileImage: {
+              id: operation.join(),
+              thumbnails: {
+                id: operation.join()
+              }
+            }
+          },
+        },
+        fields: {
+          user: ["id", "username", "email", "gender", "dob", "profileImage"]
+        }
+      })
+    ), { wrapper });
+
+    await waitFor(() => {
+      console.log("RESULT",result.current.result)
+      expect(result.current.result).toStrictEqual(data)
+    })
   });
 
 });

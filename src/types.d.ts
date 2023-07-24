@@ -2,10 +2,11 @@ export declare namespace UseAPIStore {
 
   type ForeignKey = string | number;
 
+  
   type WhereClause<T> = {
     [P in keyof T]?: T[P] extends object
     ? T[P] extends Array<any>
-    ? WhereClause<T[P]>
+    ? WhereClause<T[P]> | WhereClause<T[P][number]>
     : WhereClause<T[P]> | ForeignKey
     : WhereClause<T[P]> | ForeignKey;
   };
@@ -63,9 +64,9 @@ export declare namespace UseAPIStore {
   }
 
 
-  interface UseMutationConfig<Data, Args extends Array<any>> {
+  interface UseMutationConfig<Result, Data = undefined, Args extends Array<any>> {
     table: string;
-    mutate: (...args: Args) => Promise<Data>;
+    mutate: (...args: Args) => Promise<InferData<Data, Result>>;
   }
 
   interface UseMutationReturn<Data, Args extends Array<any>> {

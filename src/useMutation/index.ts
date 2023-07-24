@@ -3,8 +3,18 @@ import { APIStoreContext } from "../APIStore";
 import { initialState, reducer } from "./reducer";
 import { UseAPIStore } from "../types";
 
-export function useMutation<Data, Args extends Array<any>>(config: UseAPIStore.UseMutationConfig<Data, Args>): UseAPIStore.UseMutationReturn<Data, Args> {
+export function useMutation<Data, Result, Args extends Array<any>>(config: UseAPIStore.UseMutationConfig<Data, Result, Args>): UseAPIStore.UseMutationReturn<Data, Args> {
 
+  /**
+   * TODO
+   * 
+   * Instead of passing a single table,
+   * pass a selector object that takes in 
+   * table name as key and a function called on the result of mutate
+   * as value, if table is set, use table,
+   * if selector is set, use selector
+   * selector given more preference
+   */
   const {
     table,
     mutate,
@@ -17,7 +27,7 @@ export function useMutation<Data, Args extends Array<any>>(config: UseAPIStore.U
   async function makeMutation(...args: Args) {
     try {
       dispatch({ type: "isLoading", payload: true });
-      const data = await mutate(...args);
+      const data = await mutate(...args) as Data;
       context.upsert({ table, data });
       return data;
     }
