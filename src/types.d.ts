@@ -2,7 +2,7 @@ export declare namespace UseAPIStore {
 
   type ForeignKey = string | number;
 
-  
+
   type WhereClause<T> = {
     [P in keyof T]?: T[P] extends object
     ? T[P] extends Array<any>
@@ -13,7 +13,7 @@ export declare namespace UseAPIStore {
 
   interface Context<Data> {
     cache: {};
-    upsert: (params: { table: string; data: Data | Data[]; }) => void;
+    upsert: (params: { table: string; data: Data | Data[]; } | { table: string; data: Data | Data[]; }[]) => void;
     get: (table: string, where: WhereClause<Data> | null, fields: Record<string, string[]> | null) => Data | null;
   }
 
@@ -44,7 +44,7 @@ export declare namespace UseAPIStore {
 
   type InferData<Result, Data> = Data extends undefined ? Result : Data;
 
-  interface UseQueryConfig<Result, Data = undefined> {
+  type UseQueryConfig<Result, Data = undefined> = {
     table: string;
     get: {
       result?: InferData<Data, Result>;
@@ -56,6 +56,7 @@ export declare namespace UseAPIStore {
     enabled?: boolean;
   }
 
+
   interface UseQueryReturn<Data> {
     result: Data | null;
     isFetching: boolean;
@@ -64,15 +65,18 @@ export declare namespace UseAPIStore {
   }
 
 
-  interface UseMutationConfig<Result, Data = undefined, Args extends Array<any>> {
-    table: string;
-    mutate: (...args: Args) => Promise<InferData<Data, Result>>;
+  type Extractor<Result, Data> = { [table: string]: (result: Result) => any };
+
+  type UseMutationConfig<Result, Data = undefined, Args extends Array<any>> = {
+    table?: string;
+    extractor?: Extractor<Result, Data>;
+    mutate: (...args: Args) => Promise<Result>;
   }
 
-  interface UseMutationReturn<Data, Args extends Array<any>> {
+  interface UseMutationReturn<Result, Args extends Array<any>> {
     isLoading: boolean;
     error: string | null;
-    mutate: (...args: Args) => Promise<Data>;
+    mutate: (...args: Args) => Promise<Result>;
   }
 }
 

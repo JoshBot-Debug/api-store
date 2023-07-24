@@ -16,7 +16,7 @@ export function useQuery<Result, Data>(config: UseAPIStore.UseQueryConfig<Result
     result: _result,
     fetch,
   } = config.get;
-
+  
   const _where = config.get.where as Data;
 
   const [state, dispatch] = useReducer(reducer, initialState);
@@ -79,20 +79,6 @@ export function useQuery<Result, Data>(config: UseAPIStore.UseQueryConfig<Result
     finally { dispatch({ type: "isFetching", payload: false }); }
   }
 
-  function stringifyWithCircular(obj: any) {
-    const cache = new Set();
-    return JSON.stringify(obj, (key, value) => {
-      if (typeof value === "object" && value !== null) {
-        if (cache.has(value)) {
-          // Circular reference found, handle it as you prefer
-          return "CIRCULAR_REFERENCE";
-        }
-        cache.add(value);
-      }
-      return value;
-    });
-  }
-
   const result = JSON.stringify(context.get(table, where, fields));
 
   return useMemo(() => ({
@@ -100,4 +86,9 @@ export function useQuery<Result, Data>(config: UseAPIStore.UseQueryConfig<Result
     refetch,
     ...state,
   }), [state.isFetching, state.error, result])
+}
+
+
+function setupWhere() {
+
 }

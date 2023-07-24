@@ -483,10 +483,10 @@ describe("useQuery hook tests", () => {
     ), { wrapper });
 
     await waitFor(() => {
-      console.log("RESULT",result.current.result)
       expect(result.current.result).toStrictEqual(data)
     })
   });
+
 
 });
 
@@ -776,7 +776,6 @@ describe("useQuery hook component tests", () => {
           fetch,
           where: { id: props.id }
         },
-        getData: res => res,
         fields: { user: ["dob"] },
         enabled: false
       })
@@ -876,7 +875,7 @@ describe("useMutation hook", () => {
 
       const request = useMutation({
         table: "user",
-        mutate: (args) => fakeFetch(args, 100),
+        mutate: (args: any) => fakeFetch(args, 100),
       });
 
       const mutate = () => request.mutate({ id: 12, dob: "New B'Day" });
@@ -901,6 +900,39 @@ describe("useMutation hook", () => {
 
     await waitFor(() => expect(JSON.parse(resultTag.textContent as string)).toStrictEqual(Object.values(users).map(u => ({ ...u, dob: u.id === 12 ? "New B'Day" : u.dob }))))
 
+  });
+
+
+  it("useMutation should mutate multiple tables.", async () => {
+
+    const fetchResult = {
+      userData: {
+        id: 12,
+        dob: "21-02-1998",
+      },
+      tokenData: {
+        user: 12,
+        token: "<secret-updated>"
+      }
+    }
+
+    const fetch = () => fakeFetch(fetchResult, 100)
+
+    const { result } = renderHook(() => (
+      useMutation({
+        mutate: fetch,
+        extractor: {
+          user: r => r.userData,
+          token: r => r.tokenData,
+        }
+      })
+    ), { wrapper });
+
+    const response = await act(() => result.current.mutate());
+
+    expect(response).toStrictEqual(fetchResult);
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false))
   });
 
 

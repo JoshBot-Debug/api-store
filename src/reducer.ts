@@ -6,13 +6,9 @@ interface State {
 
 type Action = {
   type: "upsert",
-  payload: { table: string; data: any }
+  payload: { table: string; data: any } | { table: string; data: any }[]
   model: Model.Model
-} | {
-  type: "loading",
-  payload: boolean
 }
-
 
 export const prepareInitialState = (model: Model.Model): State => {
   return {
@@ -95,25 +91,25 @@ export function toModel(params: {
 
 export default function reducer(state: State, action: Action): State {
 
+  const model = action.model as Model.Model<Model.Table.Proto>;
+
   switch (action.type) {
+
     case "upsert": {
-      const payload = action.payload;
-      const model = action.model as Model.Model<Model.Table.Proto>;
-      return {
-        ...state,
-        cache: toModel({
-          currentCache: state.cache,
-          initialTable: payload.table,
-          payload: payload.data,
+      const payload = Array.isArray(action.payload) ? action.payload : [action.payload];
+
+      const cache = payload.reduce((currentCache, current) => (
+        toModel({
+          currentCache,
+          initialTable: current.table,
+          payload: current.data,
           model
         })
-      };
+      ), state.cache)
+
+      return { ...state, cache };
     }
 
-    case "loading": {
-
-      return state;
-    }
   }
 
 }
