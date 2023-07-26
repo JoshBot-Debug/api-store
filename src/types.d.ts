@@ -29,6 +29,7 @@ export declare namespace UseAPIStore {
     getNextPageKey: (result: Result) => NextPageKey | null | undefined;
     fields?: Record<string, string[]>;
     enabled?: boolean;
+    deps?: any[];
   }
 
   interface UseInfiniteQueryReturn<Data, NextPageParams, NextPageKey> {
@@ -54,6 +55,7 @@ export declare namespace UseAPIStore {
     getData?: (result: Result) => Data;
     fields?: Record<string, string[]>;
     enabled?: boolean;
+    deps?: any[];
   }
 
 

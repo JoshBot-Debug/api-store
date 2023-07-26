@@ -5,11 +5,13 @@ interface State {
 }
 
 type Action = {
-  type: "isFetching" | "isLoading";
+  type: "isFetching" | "isLoading" | "reset";
   payload: boolean;
 } | {
   type: "error";
   payload: any;
+} | {
+  type: "reset";
 }
 
 const initialState: State = {
@@ -32,6 +34,10 @@ function reducer(state: State, action: Action): State {
 
     case "error": {
       return { ...initialState, error: action.payload, };
+    }
+
+    case "reset": {
+      return { ...initialState };
     }
 
     default:

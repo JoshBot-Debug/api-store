@@ -17,6 +17,7 @@ export function useInfiniteQuery<
     getData,
     getNextPageParams,
     getNextPageKey,
+    deps = [],
   } = config;
 
   const {
@@ -33,8 +34,7 @@ export function useInfiniteQuery<
 
   const context = useContext<UseAPIStore.Context<Data>>(APIStoreContext as any);
 
-
-  const [where, setWhere] = useState<UseAPIStore.WhereClause<Data[] | Data>>(
+  const getDefaultWhere = () => (
     _where
       ? _where
       : _result
@@ -42,10 +42,16 @@ export function useInfiniteQuery<
           ? getData(_result as Result)
           : _result as Data
         : []
-  );
+  )
+
+  const [where, setWhere] = useState<UseAPIStore.WhereClause<Data[] | Data>>(() => getDefaultWhere());
 
 
-  useEffect(() => { onMount(); }, []);
+  useEffect(() => {
+    dispatch({ type: "reset" });
+    setWhere(getDefaultWhere())
+    onMount();
+  }, deps);
 
 
   async function fetchSetAndGet(nextParams?: NextPageParams | null) {

@@ -15,6 +15,8 @@ type Action<NextPageParams, NextPageKey> = {
 } | {
   type: "nextPageParams";
   payload: { nextPageKey?: NextPageKey | null, nextPageParams?: NextPageParams | null }
+} | {
+  type: "reset";
 }
 
 const initialState: State<any, any> = {
@@ -53,6 +55,10 @@ function reducer<NextPageParams, NextPageKey>(state: State<NextPageParams, NextP
 
     case "error": {
       return { ...initialState, error: action.payload };
+    }
+
+    case "reset": {
+      return { ...initialState };
     }
 
     default:

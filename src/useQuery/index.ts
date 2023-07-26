@@ -10,20 +10,22 @@ export function useQuery<Result, Data>(config: UseAPIStore.UseQueryConfig<Result
     enabled = true,
     fields = null,
     getData,
+    deps = [],
   } = config;
 
   const {
     result: _result,
     fetch,
   } = config.get;
-  
+
   const _where = config.get.where as Data;
 
   const [state, dispatch] = useReducer(reducer, initialState);
 
   const context = useContext<UseAPIStore.Context<Data>>(APIStoreContext as any);
 
-  const [where, setWhere] = useState<UseAPIStore.WhereClause<Data> | null>(
+
+  const getDefaultWhere = () => (
     _where
       ? _where
       : _result
@@ -31,9 +33,15 @@ export function useQuery<Result, Data>(config: UseAPIStore.UseQueryConfig<Result
           ? getData(_result as Result)
           : _result as Data
         : null
-  );
+  )
 
-  useEffect(() => { onMount(); }, []);
+  const [where, setWhere] = useState<UseAPIStore.WhereClause<Data> | null>(() => getDefaultWhere());
+
+  useEffect(() => {
+    dispatch({ type: "reset" });
+    setWhere(getDefaultWhere());
+    onMount();
+  }, deps);
 
   async function onMount() {
     try {
