@@ -3,7 +3,7 @@ interface State<NextPageParams, NextPageKey> {
   isLoading: boolean;
   isFetching: boolean;
   nextPageParams: { nextPageKey?: NextPageKey | null, nextPageParams?: NextPageParams | null }[];
-  error: string | null;
+  error: any | null;
 }
 
 type Action<NextPageParams, NextPageKey> = {
@@ -11,7 +11,7 @@ type Action<NextPageParams, NextPageKey> = {
   payload: boolean;
 } | {
   type: "error";
-  payload: string;
+  payload: any;
 } | {
   type: "nextPageParams";
   payload: { nextPageKey?: NextPageKey | null, nextPageParams?: NextPageParams | null }

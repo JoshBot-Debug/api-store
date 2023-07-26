@@ -1,7 +1,7 @@
 interface State {
   isLoading: boolean;
   isFetching: boolean;
-  error: string | null;
+  error: any | null;
 }
 
 type Action = {
@@ -9,7 +9,7 @@ type Action = {
   payload: boolean;
 } | {
   type: "error";
-  payload: string;
+  payload: any;
 }
 
 const initialState: State = {
@@ -31,7 +31,7 @@ function reducer(state: State, action: Action): State {
     }
 
     case "error": {
-      return { ...initialState, error: action.payload };
+      return { ...initialState, error: action.payload, };
     }
 
     default:

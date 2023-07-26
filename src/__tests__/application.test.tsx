@@ -487,6 +487,22 @@ describe("useQuery hook tests", () => {
     })
   });
 
+  it("useQuery with error", async () => {
+
+    const { result } = renderHook(() => (
+      useQuery({
+        table: "user",
+        get: {
+          fetch: () => Promise.reject("SOME ERROR")
+        },
+      })
+    ), { wrapper });
+
+    await waitFor(() => {
+      expect(result.current.error).toStrictEqual("SOME ERROR")
+    })
+  });
+
 
 });
 

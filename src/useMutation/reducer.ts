@@ -1,6 +1,6 @@
 interface State {
   isLoading: boolean;
-  error: string | null;
+  error: any | null;
 }
 
 type Action = {
@@ -8,7 +8,7 @@ type Action = {
   payload: boolean;
 } | {
   type: "error";
-  payload: string;
+  payload: any;
 }
 
 const initialState: State = {

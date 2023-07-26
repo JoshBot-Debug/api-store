@@ -106,13 +106,13 @@ export function useInfiniteQuery<
       const where = _where ?? data;
       setWhere(where);
       context.upsert({ table, data });
-      return await fetchSetAndGet(nextParams);
+      const result = await fetchSetAndGet(nextParams);
+      dispatch({ type: "isFetching", payload: false });
+      return result;
     }
     catch (error) {
-      dispatch({ type: "error", payload: (error as any).message ?? `Something went wrong... \nERROR: ${JSON.stringify(error)}` })
-      throw error;
+      dispatch({ type: "error", payload: error })
     }
-    finally { dispatch({ type: "isFetching", payload: false }); }
   }
 
 
@@ -122,13 +122,13 @@ export function useInfiniteQuery<
     try {
       dispatch({ type: "isFetching", payload: true });
       const nextParams = state.nextPageParams[state.nextPageParams.length - 1]?.nextPageParams;
-      return await fetchSetAndGet(nextParams);
+      const result = await fetchSetAndGet(nextParams);
+      dispatch({ type: "isFetching", payload: false });
+      return result;
     }
     catch (error) {
-      dispatch({ type: "error", payload: (error as any).message ?? `Something went wrong... \nERROR: ${JSON.stringify(error)}` })
-      throw error;
+      dispatch({ type: "error", payload: error })
     }
-    finally { dispatch({ type: "isFetching", payload: false }); }
   }
 
   const result = JSON.stringify(context.get(table, where, fields));

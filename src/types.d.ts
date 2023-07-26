@@ -35,9 +35,9 @@ export declare namespace UseAPIStore {
     result: Data[];
     isFetching: boolean;
     isLoading: boolean;
-    error: string | null;
-    refetch: (nextParams?: NextPageParams) => Promise<Data[]>;
-    fetchNextPage: () => Promise<Data[] | any[]>;
+    error: any | null;
+    refetch: (nextParams?: NextPageParams) => Promise<Data[] | undefined>;
+    fetchNextPage: () => Promise<Data[] | any[] | undefined>;
     hasNextPage: boolean;
     nextPageParams: { nextPageKey?: NextPageKey | null, nextPageParams?: NextPageParams | null }[];
   }
@@ -60,8 +60,8 @@ export declare namespace UseAPIStore {
   interface UseQueryReturn<Data> {
     result: Data | null;
     isFetching: boolean;
-    error: string | null;
-    refetch: (...args: any[]) => Promise<Data>;
+    error: any | null;
+    refetch: (...args: any[]) => Promise<Data | undefined>;
   }
 
 
@@ -75,8 +75,8 @@ export declare namespace UseAPIStore {
 
   interface UseMutationReturn<Result, Args extends Array<any>> {
     isLoading: boolean;
-    error: string | null;
-    mutate: (...args: Args) => Promise<Result>;
+    error: any | null;
+    mutate: (...args: Args) => Promise<Result | undefined>;
   }
 }
 

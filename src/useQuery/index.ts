@@ -50,14 +50,11 @@ export function useQuery<Result, Data>(config: UseAPIStore.UseQueryConfig<Result
         const where = _where ?? data;
         setWhere(where);
         context.upsert({ table, data });
+        dispatch({ type: "isLoading", payload: false });
       }
     }
-    catch (error) {
-      dispatch({ type: "error", payload: (error as any).message ?? `Something went wrong... \nERROR: ${JSON.stringify(error)}` })
-      throw error;
-    }
-    finally {
-      dispatch({ type: "isLoading", payload: false });
+    catch (error: any) {
+      dispatch({ type: "error", payload: error });
     }
   }
 
@@ -70,13 +67,12 @@ export function useQuery<Result, Data>(config: UseAPIStore.UseQueryConfig<Result
       const where = _where ?? data;
       setWhere(where);
       context.upsert({ table, data });
+      dispatch({ type: "isFetching", payload: false });
       return data;
     }
     catch (error) {
-      dispatch({ type: "error", payload: (error as any).message ?? `Something went wrong... \nERROR: ${JSON.stringify(error)}` })
-      throw error;
+      dispatch({ type: "error", payload: error });
     }
-    finally { dispatch({ type: "isFetching", payload: false }); }
   }
 
   const result = JSON.stringify(context.get(table, where, fields));

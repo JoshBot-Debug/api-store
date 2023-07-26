@@ -45,13 +45,12 @@ export function useMutation<Result, Data, Args extends Array<any>>(
         context.upsert(payload);
       }
 
+      dispatch({ type: "isLoading", payload: false });
       return result;
     }
-    catch (error) {
-      dispatch({ type: "error", payload: (error as any).message ?? `Something went wrong... \nERROR: ${JSON.stringify(error)}` })
-      throw error;
+    catch (error: any) {
+      dispatch({ type: "error", payload: error });
     }
-    finally { dispatch({ type: "isLoading", payload: false }); }
   }
 
   return useMemo(() => ({
