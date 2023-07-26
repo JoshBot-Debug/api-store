@@ -56,10 +56,6 @@ export function useInfiniteQuery<
 
   async function fetchSetAndGet(nextParams?: NextPageParams | null) {
     if (!fetch) throw new Error("You cannot use useInfiniteQuery without passing a fetch function to the hook.");
-    if (!state.hasNextPage) {
-      dispatch({ type: "hasNextPage", payload: false });
-      return [];
-    }
     const fetchResult = await fetch(nextParams);
     const data = getData(fetchResult);
     const nextPageParams = getNextPageParams(fetchResult);
@@ -87,14 +83,11 @@ export function useInfiniteQuery<
       if (enabled) {
         dispatch({ type: "isLoading", payload: true });
         await fetchSetAndGet();
+        dispatch({ type: "isLoading", payload: false });
       }
     }
     catch (error) {
-      dispatch({ type: "error", payload: (error as any).message ?? `Something went wrong... \nERROR: ${JSON.stringify(error)}` })
-      throw error;
-    }
-    finally {
-      dispatch({ type: "isLoading", payload: false });
+      dispatch({ type: "error", payload: error })
     }
   }
 
