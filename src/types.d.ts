@@ -73,6 +73,7 @@ export declare namespace UseAPIStore {
     table?: string;
     extractor?: Extractor<Result, Data>;
     mutate: (...args: Args) => Promise<Result>;
+    deps?: any[];
   }
 
   interface UseMutationReturn<Result, Args extends Array<any>> {

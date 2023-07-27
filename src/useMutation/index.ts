@@ -21,6 +21,7 @@ export function useMutation<Result, Data, Args extends Array<any>>(
     table,
     extractor,
     mutate,
+    deps,
   } = config;
 
   const [state, dispatch] = useReducer(reducer, initialState);
@@ -39,7 +40,8 @@ export function useMutation<Result, Data, Args extends Array<any>>(
         const tables = Object.keys(extractor);
         const payload = tables.flatMap(table => {
           const data = extractor[table](result);
-          if (data === undefined) return []
+          if (data === undefined) return [];
+          if (Array.isArray(data)) return data.map(d => ({ table, data: d }))
           return { table, data }
         })
         context.upsert(payload);
@@ -53,8 +55,10 @@ export function useMutation<Result, Data, Args extends Array<any>>(
     }
   }
 
+  const depend = [state.isLoading, state.error, deps].flat()
+
   return useMemo(() => ({
     mutate: makeMutation,
     ...state,
-  }), [state.isLoading, state.error])
+  }), depend)
 }
