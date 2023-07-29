@@ -4,7 +4,8 @@ import { initialState, reducer } from "./reducer";
 import { UseAPIStore } from "../types";
 
 export function useMutation<Result, Data, Args extends Array<any>>(
-  config: UseAPIStore.UseMutationConfig<Result, Data, Args>
+  config: UseAPIStore.UseMutationConfig<Result, Data, Args>,
+  deps = [],
 ): UseAPIStore.UseMutationReturn<Result, Args> {
 
   /**
@@ -21,7 +22,6 @@ export function useMutation<Result, Data, Args extends Array<any>>(
     table,
     extractor,
     mutate,
-    deps,
   } = config;
 
   const [state, dispatch] = useReducer(reducer, initialState);
