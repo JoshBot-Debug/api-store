@@ -5,7 +5,7 @@ import { UseAPIStore } from "../types";
 
 export function useMutation<Result, Data, Args extends Array<any>>(
   config: UseAPIStore.UseMutationConfig<Result, Data, Args>,
-  deps = [],
+  deps: any[] = [],
 ): UseAPIStore.UseMutationReturn<Result, Args> {
 
   /**

@@ -3,7 +3,7 @@ import { APIStoreContext } from "../APIStore";
 import { initialState, reducer } from "./reducer";
 import { UseAPIStore } from "../types";
 
-export function useQuery<Result, Data>(config: UseAPIStore.UseQueryConfig<Result, Data>, deps: any[]): UseAPIStore.UseQueryReturn<Data> {
+export function useQuery<Result, Data>(config: UseAPIStore.UseQueryConfig<Result, Data>, deps: any[] = []): UseAPIStore.UseQueryReturn<Data> {
 
   const {
     table,
