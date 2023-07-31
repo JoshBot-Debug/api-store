@@ -282,11 +282,16 @@ export function createModel(tables: Model.Table.Created[]) {
 
 
   function filterSelectedFields(record: Record<string, any>, select: string[]) {
+    if (!record) return;
+
     for (const key in record) {
       if (!Object.prototype.hasOwnProperty.call(record, key)) continue;
       if (select.includes(key)) continue;
       delete record[key];
     }
+
+    const missingField = select.find(field => !(field in record));
+    if (missingField) throw new Error(`Missing field: ${missingField}`);
   }
 
 
@@ -358,239 +363,249 @@ export function createModel(tables: Model.Table.Created[]) {
   Object.setPrototypeOf(model, <Model.Proto>{
     get(table, normalizedData, where, fields) {
 
-      // If our where clause is an array, map over it and get the values
-      if (Array.isArray(where)) {
+      try {
 
-        return filterUnique(this, table, where)
-          .flatMap(_where => this.get(table, normalizedData, _where, fields) ?? [])
-      }
+        // If our where clause is an array, map over it and get the values
+        if (Array.isArray(where)) {
 
-      const schema = this[table] as Model.Table.Proto;
-
-      let result: any = null;
-
-      // The selected table
-      // Deep copy the object
-      const record = normalizedData[table];
-
-      // If there is no record, exit.
-      if (!record || Object.keys(record).length === 0) return null;
-
-      // Cleans the where clause
-      const clauses = cleanWhere(this, where, table);
-
-      /**
-       * If there is a primary key,
-       * Search the records for the primary key.
-       * If it does not exist, return null
-       * Otherwise set the result as the matching value.
-       * Lastly, delete the primary key from the where clause and continue.
-       */
-      if (clauses.__hasPrimaryKey[table]) {
-        const primaryKeyValue = clauses[schema.__pk];
-
-        let match = null
-
-        const isJoin = (primaryKeyValue as Model.OperationProto).__isJoin;
-
-
-        // Join operation on a primary key
-        // Handle all join possibilities
-        if (isJoin) {
-
-          const primaryKeys = (where as Model.ParentRef).__parentValue;
-          const hasMany = Array.isArray(primaryKeys);
-
-          // May be an array or a single value
-          // Depends on if this relationship was a hasOne or hasMany.
-          const selected = !hasMany ? { ...record[primaryKeys] } : primaryKeys.map(pk => ({ ...record[pk] }));
-
-          // If we are joining on *, set the value regardless
-          if (primaryKeyValue.__on === "*" && selected) match = selected;
-
-          // If we are joining on a function, check for true
-          if (
-            typeof primaryKeyValue.__on === "function" &&
-            primaryKeyValue.__on(selected)
-          ) match = selected;
+          return filterUnique(this, table, where)
+            .flatMap(_where => this.get(table, normalizedData, _where, fields) ?? [])
         }
 
-        // If this is the object instead of the primary key value
-        // Then it is a relation that contains the primary key
-        if (!isJoin && typeof primaryKeyValue === "object") {
+        const schema = this[table] as Model.Table.Proto;
 
-          // If the primary key is an object, then it is a relation
-          // So this relationship must exist
-          const relationTableName = schema.__relationship.__alias[schema.__pk];
-          const relation = (schema.__relationship[relationTableName] as Model.Table.Relationship.Proto);
-          const relationWhere = { [schema.__pk]: primaryKeyValue[relation.__pk] }
-          const row = this.get(table, normalizedData, relationWhere, fields);
+        let result: any = null;
 
-          if (row) match = row;
+        // The selected table
+        // Deep copy the object
+        const record = normalizedData[table];
+
+        // If there is no record, exit.
+        if (!record || Object.keys(record).length === 0) return null;
+
+        // Cleans the where clause
+        const clauses = cleanWhere(this, where, table);
+
+        /**
+         * If there is a primary key,
+         * Search the records for the primary key.
+         * If it does not exist, return null
+         * Otherwise set the result as the matching value.
+         * Lastly, delete the primary key from the where clause and continue.
+         */
+        if (clauses.__hasPrimaryKey[table]) {
+          const primaryKeyValue = clauses[schema.__pk];
+
+          let match = null
+
+          const isJoin = (primaryKeyValue as Model.OperationProto).__isJoin;
+
+
+          // Join operation on a primary key
+          // Handle all join possibilities
+          if (isJoin) {
+
+            const primaryKeys = (where as Model.ParentRef).__parentValue;
+            const hasMany = Array.isArray(primaryKeys);
+
+            // May be an array or a single value
+            // Depends on if this relationship was a hasOne or hasMany.
+            const selected = !hasMany ? { ...record[primaryKeys] } : primaryKeys.map(pk => ({ ...record[pk] }));
+
+            // If we are joining on *, set the value regardless
+            if (primaryKeyValue.__on === "*" && selected) match = selected;
+
+            // If we are joining on a function, check for true
+            if (
+              typeof primaryKeyValue.__on === "function" &&
+              primaryKeyValue.__on(selected)
+            ) match = selected;
+          }
+
+          // If this is the object instead of the primary key value
+          // Then it is a relation that contains the primary key
+          if (!isJoin && typeof primaryKeyValue === "object") {
+
+            // If the primary key is an object, then it is a relation
+            // So this relationship must exist
+            const relationTableName = schema.__relationship.__alias[schema.__pk];
+            const relation = (schema.__relationship[relationTableName] as Model.Table.Relationship.Proto);
+            const relationWhere = { [schema.__pk]: primaryKeyValue[relation.__pk] }
+            const row = this.get(table, normalizedData, relationWhere, fields);
+
+            if (row) match = row;
+          }
+
+          // If this is the primary key value
+          if (typeof primaryKeyValue !== "object") {
+            const row = record[primaryKeyValue];
+
+            if (row) match = { ...row };
+            delete clauses[schema.__pk];
+          }
+
+          if (!match) return null;
+
+          // Set result to a new object here to 
+          // prevent normalizedData, state.cache from mutating...
+          result = match;
         }
 
-        // If this is the primary key value
-        if (typeof primaryKeyValue !== "object") {
-          const row = record[primaryKeyValue];
-
-          if (row) match = { ...row };
-          delete clauses[schema.__pk];
+        // If there are conditions
+        // Then there was no primary key
+        // Find all the records that match the conditions
+        // return them in an array
+        if (clauses.__conditions.length > 0) {
+          const clauseKeys = clauses.__conditions;
+          const clauseValues = clauses.__conditions.map((c: string) => clauses[c])
+          result = find(record, clauseKeys, clauseValues);
         }
 
-        if (!match) return null;
 
-        // Set result to a new object here to 
-        // prevent normalizedData, state.cache from mutating...
-        result = match;
-      }
+        // There are several possiblilties here
+        // 1. Result can be one object or an array
+        // 2. The relation is an object, we will recursively call ourself.
+        // 4. It may be a join operation, "*" or an "on()" function
+        if (clauses.__relations.length > 0) {
+          if (!result) result = {};
+          const clauseKeys = clauses.__relations;
+          const clauseValues = clauses.__relations.map((c: string) => clauses[c])
 
-      // If there are conditions
-      // Then there was no primary key
-      // Find all the records that match the conditions
-      // return them in an array
-      if (clauses.__conditions.length > 0) {
-        const clauseKeys = clauses.__conditions;
-        const clauseValues = clauses.__conditions.map((c: string) => clauses[c])
-        result = find(record, clauseKeys, clauseValues);
-      }
-
-
-      // There are several possiblilties here
-      // 1. Result can be one object or an array
-      // 2. The relation is an object, we will recursively call ourself.
-      // 4. It may be a join operation, "*" or an "on()" function
-      if (clauses.__relations.length > 0) {
-        if (!result) result = {};
-        const clauseKeys = clauses.__relations;
-        const clauseValues = clauses.__relations.map((c: string) => clauses[c])
-
-        // If result is an array
-        // The where clause did not contain a primary key, instead it contained conditions.
-        // Loop over the results, get all the matching related fields.
-        // You probably don't ever want to do this, but it is possible.
-        if (Array.isArray(result)) {
-          for (let r = 0; r < result.length; r++) {
-            for (let ck = 0; ck < clauseKeys.length; ck++) {
-              applyObjectRelations(
-                schema,
-                ck,
-                clauseKeys,
-                clauseValues,
-                result[r],
-                (ckTable, ckValue) => this.get(ckTable, normalizedData, ckValue, fields),
-              )
+          // If result is an array
+          // The where clause did not contain a primary key, instead it contained conditions.
+          // Loop over the results, get all the matching related fields.
+          // You probably don't ever want to do this, but it is possible.
+          if (Array.isArray(result)) {
+            for (let r = 0; r < result.length; r++) {
+              for (let ck = 0; ck < clauseKeys.length; ck++) {
+                applyObjectRelations(
+                  schema,
+                  ck,
+                  clauseKeys,
+                  clauseValues,
+                  result[r],
+                  (ckTable, ckValue) => this.get(ckTable, normalizedData, ckValue, fields),
+                )
+              }
             }
           }
-        }
 
-        // If results is not an array, do the same
-        for (let ck = 0; ck < clauseKeys.length; ck++) {
-          applyObjectRelations(
-            schema,
-            ck,
-            clauseKeys,
-            clauseValues,
-            result,
-            (ckTable, ckValue) => this.get(ckTable, normalizedData, ckValue, fields),
-          )
-        }
-
-      }
-
-
-      // If the we have specified the fields we want to retrieve
-      // Cleaning must be done before joining
-      // Once the join happens, fields will not match because the object is joint to the parent
-      if (fields) keepSelectedFields(where?.__parentField ?? table, result, fields)
-
-
-      // If it is a join, there are 3 possiblities
-      // 1. Result can be one object or an array
-      // 3. "on()" join
-      // 4. The join could be performed on a related table as well.
-      // 5. Result could be an object, an array or it could not exist.
-      if (clauses.__joins.length > 0) {
-        const clauseKeys = clauses.__joins;
-        const clauseValues = clauses.__joins.map((c: string) => clauses[c] as Model.OperationProto)
-
-        // If there is a result and it is not an array
-        // Then find by join for one.
-        if (result && !Array.isArray(result)) {
-
-          const findResults = findByJoin(this, table, normalizedData, result, clauseKeys, clauseValues, fields);
-          if (!findResults) return null;
-
-          for (let i = 0; i < clauseKeys.length; i++) {
-            const cKey = clauseKeys[i];
-            const cValue = clauseValues[i];
-
-            // If there is no match and it is not a *, then remove the record
-            if (!(cKey in findResults) && cValue.__on !== "*") continue;
-            result[cKey] = findResults[cKey];
+          // If results is not an array, do the same
+          for (let ck = 0; ck < clauseKeys.length; ck++) {
+            applyObjectRelations(
+              schema,
+              ck,
+              clauseKeys,
+              clauseValues,
+              result,
+              (ckTable, ckValue) => this.get(ckTable, normalizedData, ckValue, fields),
+            )
           }
+
         }
 
 
-        // If there is a result and it is an array
-        if (result && Array.isArray(result)) {
+        // If the we have specified the fields we want to retrieve
+        // Cleaning must be done before joining
+        // Once the join happens, fields will not match because the object is joint to the parent
+        if (fields) keepSelectedFields(where?.__parentField ?? table, result, fields)
 
-          const validatedResults = [];
 
-          for (let r = 0; r < result.length; r++) {
-            const _result = result[r];
-            const findResults = findByJoin(this, table, normalizedData, _result, clauseKeys, clauseValues, fields);
+        // If it is a join, there are 3 possiblities
+        // 1. Result can be one object or an array
+        // 3. "on()" join
+        // 4. The join could be performed on a related table as well.
+        // 5. Result could be an object, an array or it could not exist.
+        if (clauses.__joins.length > 0) {
+          const clauseKeys = clauses.__joins;
+          const clauseValues = clauses.__joins.map((c: string) => clauses[c] as Model.OperationProto)
 
-            if (!findResults) continue;
+          // If there is a result and it is not an array
+          // Then find by join for one.
+          if (result && !Array.isArray(result)) {
 
-            let current = null;
+            const findResults = findByJoin(this, table, normalizedData, result, clauseKeys, clauseValues, fields);
+            if (!findResults) return null;
+
             for (let i = 0; i < clauseKeys.length; i++) {
               const cKey = clauseKeys[i];
               const cValue = clauseValues[i];
 
               // If there is no match and it is not a *, then remove the record
-              if (!(cKey in findResults) && cValue.__on !== "*") {
-                current = null;
-                break;
-              }
-
-              result[r][cKey] = findResults[cKey];
-              current = result[r]
+              if (!(cKey in findResults) && cValue.__on !== "*") continue;
+              result[cKey] = findResults[cKey];
             }
-
-            if (current) validatedResults.push(current)
           }
 
-          return validatedResults
-        }
 
+          // If there is a result and it is an array
+          if (result && Array.isArray(result)) {
 
-        // If there is no result,
-        // then we will return an array of object that match
-        if (!result) {
+            const validatedResults = [];
 
-          result = Object
-            .values(record)
-            .flatMap((res: any) => {
+            for (let r = 0; r < result.length; r++) {
+              const _result = result[r];
+              const findResults = findByJoin(this, table, normalizedData, _result, clauseKeys, clauseValues, fields);
 
-              const findResults = findByJoin(this, table, normalizedData, res, clauseKeys, clauseValues, fields);
-              if (!findResults) return []
+              if (!findResults) continue;
 
+              let current = null;
               for (let i = 0; i < clauseKeys.length; i++) {
                 const cKey = clauseKeys[i];
                 const cValue = clauseValues[i];
 
                 // If there is no match and it is not a *, then remove the record
-                if (!(cKey in findResults) && cValue.__on !== "*") return [];
+                if (!(cKey in findResults) && cValue.__on !== "*") {
+                  current = null;
+                  break;
+                }
 
-                res[cKey] = findResults[cKey];
+                result[r][cKey] = findResults[cKey];
+                current = result[r]
               }
 
-              return res
-            })
+              if (current) validatedResults.push(current)
+            }
+
+            return validatedResults
+          }
+
+
+          // If there is no result,
+          // then we will return an array of object that match
+          if (!result) {
+
+            result = Object
+              .values(record)
+              .flatMap((res: any) => {
+
+                const findResults = findByJoin(this, table, normalizedData, res, clauseKeys, clauseValues, fields);
+                if (!findResults) return []
+
+                for (let i = 0; i < clauseKeys.length; i++) {
+                  const cKey = clauseKeys[i];
+                  const cValue = clauseValues[i];
+
+                  // If there is no match and it is not a *, then remove the record
+                  if (!(cKey in findResults) && cValue.__on !== "*") return [];
+
+                  res[cKey] = findResults[cKey];
+                }
+
+                return res
+              })
+          }
         }
+
+        return result
+
       }
 
-      return result
+      catch (error: any) {
+        if (error.message && error.message.split(":")[0] === "Missing field") return null;
+        throw error;
+      }
+
     },
   })
 
