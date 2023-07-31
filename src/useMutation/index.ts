@@ -8,16 +8,6 @@ export function useMutation<Result, Data, Args extends Array<any>>(
   deps: any[] = [],
 ): UseAPIStore.UseMutationReturn<Result, Args> {
 
-  /**
-   * TODO
-   * 
-   * Instead of passing a single table,
-   * pass a selector object that takes in 
-   * table name as key and a function called on the result of mutate
-   * as value, if table is set, use table,
-   * if selector is set, use selector
-   * selector given more preference
-   */
   const {
     table,
     extractor,
