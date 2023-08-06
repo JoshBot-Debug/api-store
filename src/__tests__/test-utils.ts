@@ -21,18 +21,19 @@ type PaginationResponse<T> = {
 
 /**
  * Simulates pagination
- * If no nextParams.createdAt isp passed, it will return the first page
+ * If no nextParams.createdAt is passed, it will return the first page
  * nextParams.createdAt is the index
  */
 export const fakePaginatingFetch = <T>(result: T[], nextParams: PaginationResponse<T>["nextParams"], pageCount: number = 2, delay: number = 100) => {
   return new Promise<PaginationResponse<T>>(resolve => {
     const pages: {[createdAt: string]: PaginationResponse<T>} = {};
     for (let i = 0; i < result.length; i += pageCount) {
-      const createdAt = `2023-06-20T17:02:23.${i + 1}00Z`;
+      const p = Object.keys(pages).length
+      const createdAt = `2023-06-20T17:02:23.${p}00Z`;
       pages[createdAt] = {
         data: result.slice(i, i + pageCount),
         nextParams: result.length - 1 === i ? null : {
-          createdAt: `2023-06-20T17:02:23.${pageCount + 1}00Z`
+          createdAt: `2023-06-20T17:02:23.${p+1}00Z`
         }
       };
     }

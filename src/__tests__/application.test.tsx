@@ -1,7 +1,10 @@
-import { createRelationalObject, createRelationalObjectIndex, createStore } from "@jjmyers/object-relationship-store";
-import { RelationalStoreProvider, useStoreSelect, useStoreIndex } from "..";
-import { act, renderHook } from "@testing-library/react";
+import { act, renderHook, waitFor } from "@testing-library/react";
 import { posts } from "./data";
+import { RelationalStoreProvider, createRelationalObject, createRelationalObjectIndex, createStore, useStoreIndex } from "..";
+import { useQuery } from "../useQuery";
+import { fakeFetch, fakePaginatingFetch } from "./test-utils";
+import { useInfiniteQuery } from "../useInfiniteQuery";
+import { useMutation } from "../useMutation";
 
 const user = createRelationalObject("user", { id: "number" });
 const image = createRelationalObject("image", { id: "number" });
@@ -36,29 +39,115 @@ const wrapper = ({ children }: React.PropsWithChildren) => {
 }
 
 
-describe("Should create a store", () => {
+it("should get data from a store", async () => {
+
+  store.upsert(posts, { indexes: [{ index: "homeFeed", key: "1" }] })
+
+  const { result } = renderHook(() => (
+    useStoreIndex("homeFeed-1", {
+      post: {
+        from: "post",
+        fields: ["id"],
+      }
+    })
+  ), { wrapper });
+
+  expect(result.current?.length).toBe(5)
+
+  act(() => store.upsert({ id: 5, caption: "Hey" }, { indexes: [{ index: "homeFeed", key: "1" }] }))
+
+  expect(result.current?.length).toBe(6)
+
+})
 
 
-  it("should get data from a store", async () => {
+it("should get data from useQuery", async () => {
 
-    store.upsert(posts, { indexes: ["homeFeed"] })
+  store.purge()
 
-    const { result } = renderHook(() => (
-      useStoreIndex("homeFeed", {
-        post: {
-          from: "post",
-          fields: ["id"],
-        }
-      })
-    ), { wrapper });
+  store.upsert(posts, { indexes: [{ index: "homeFeed", key: "1" }] })
 
-    expect(result.current?.length).toBe(5)
+  const r1 = renderHook(() => (
+    useQuery({
+      select: {
+        from: "post",
+        // @ts-ignore
+        fields: ["id", "createdAt"],
+        where: { id: 10 }
+      },
+    })
+  ), { wrapper });
 
-    act(() => store.upsert({id: 5, caption: "Hey"}, { indexes: ["homeFeed"] }))
+  expect(r1.result.current.state).toStrictEqual({ id: 10, createdAt: "2023-06-26T14:24:04.000Z" })
 
-    expect(result.current?.length).toBe(6)
+  const r2 = renderHook(() => (
+    useQuery({
+      select: {
+        from: "post",
+        // @ts-ignore
+        fields: ["id", "createdAt"],
+        where: { id: 10 }
+      },
+      fetch: () => fakeFetch({ id: 10, createdAt: "Updated", caption: "Hey" })
+    })
+  ), { wrapper });
 
-  })
+  await waitFor(() => expect(r2.result.current.state).toStrictEqual({ id: 10, createdAt: "Updated" }))
+  await waitFor(() => expect(r2.result.current.result).toStrictEqual({ id: 10, createdAt: "Updated", caption: "Hey" }))
+})
 
 
+it("should get data from useInfiniteQuery", async () => {
+
+  store.purge()
+
+  const r1 = renderHook(() => (
+    useInfiniteQuery({
+      index: "homeFeed-1",
+      getData: r => r.data,
+      getNextPageParams: r => r.nextParams,
+      fetch: nextParams => fakePaginatingFetch(posts, nextParams)
+    })
+  ), { wrapper });
+
+  await waitFor(() => expect(r1.result.current.state?.length).toStrictEqual(2))
+  await waitFor(() => expect(r1.result.current.nextPageParams).toStrictEqual({ createdAt: "2023-06-20T17:02:23.100Z" }))
+
+  await act(() => r1.result.current.fetchNextPage())
+  await waitFor(() => expect(r1.result.current.state?.length).toStrictEqual(4))
+  await waitFor(() => expect(r1.result.current.nextPageParams).toStrictEqual({ createdAt: "2023-06-20T17:02:23.200Z" }))
+
+  await act(() => r1.result.current.fetchNextPage())
+  await waitFor(() => expect(r1.result.current.state?.length).toStrictEqual(5))
+})
+
+
+it("should mutate useQuery when useMutation is called", async () => {
+
+  store.purge()
+
+  store.upsert(posts, { indexes: [{ index: "homeFeed", key: "1" }] })
+
+  const r1 = renderHook(() => (
+    useQuery({
+      select: {
+        from: "post",
+        // @ts-ignore
+        fields: ["id", "createdAt"],
+        where: { id: 10 }
+      },
+    })
+  ), { wrapper });
+
+  expect(r1.result.current.state).toStrictEqual({ id: 10, createdAt: "2023-06-26T14:24:04.000Z" })
+
+  const r2 = renderHook(() => (
+    useMutation({
+      mutate: () => fakeFetch({ id: 10, createdAt: "Updated", caption: "Hey" })
+    })
+  ), { wrapper });
+
+  await act(() => r2.result.current.mutate())
+
+  await waitFor(() => expect(r1.result.current.state).toStrictEqual({ id: 10, createdAt: "Updated" }))
 })

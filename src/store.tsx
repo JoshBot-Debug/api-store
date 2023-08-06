@@ -1,11 +1,16 @@
-import React, { createContext, useCallback, useContext, useSyncExternalStore } from 'react';
-import { createStore, createRelationalObject, createRelationalObjectIndex, type ORS } from "@jjmyers/object-relationship-store"
+import { createContext, useCallback, useContext, useSyncExternalStore } from 'react';
+import { type ORS } from "@jjmyers/object-relationship-store"
+import { UseAPIStore } from './types';
 
 const StoreContext = createContext<ORS.Store<any, any, any> | null>(null);
 
-const useStore = () => useContext(StoreContext);
+export const useStore = <
+  N extends string,
+  I extends string,
+  O extends string,
+>() => useContext(StoreContext) as ORS.Store<N, I, O>;
 
-const useStoreSelect = <
+export const useStoreSelect = <
   N extends string = string,
   O extends Record<string, any> = Record<string, any>
 >(
@@ -22,13 +27,13 @@ const useStoreSelect = <
   )
 }
 
-const useStoreIndex = <
+export const useStoreIndex = <
   N extends string = string,
   I extends string = string,
-  T extends Record<string, any> = Record<string, any>,
+  O extends Record<string, any> = Record<string, any>,
 >(
-  index: I,
-  selector: Record<string, ORS.Replace<ORS.SelectOptions<N, T>, "where", (object: any) => boolean>>
+  index: `${I}-${string}`,
+  selector?: Record<string, ORS.Replace<ORS.SelectOptions<N, O>, "where", (object: any) => boolean>>
 ) => {
 
   const store = useContext(StoreContext)
@@ -41,19 +46,11 @@ const useStoreIndex = <
   )
 }
 
-interface RelationalStoreProps<
+export function RelationalStoreProvider<
   N extends string = string,
   I extends string = string,
   O extends string = string,
-> extends React.PropsWithChildren {
-  store: ORS.Store<N, I, O>
-}
-
-function RelationalStoreProvider<
-  N extends string = string,
-  I extends string = string,
-  O extends string = string,
->(props: RelationalStoreProps<N, I, O>) {
+>(props: UseAPIStore.RelationalStoreProps<N, I, O>) {
 
   const {
     store,
@@ -61,15 +58,4 @@ function RelationalStoreProvider<
   } = props;
 
   return <StoreContext.Provider value={store}>{children}</StoreContext.Provider>
-}
-
-export {
-  ORS,
-  createStore,
-  createRelationalObject,
-  createRelationalObjectIndex,
-  useStore,
-  useStoreSelect,
-  useStoreIndex,
-  RelationalStoreProvider,
 }
