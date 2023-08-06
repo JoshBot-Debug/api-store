@@ -80,7 +80,8 @@
     "ts-node": "^10.9.1",
     "tslib": "^2.6.0",
     "typescript": "^5.1.6",
-    "web-vitals": "^2.1.4"
+    "web-vitals": "^2.1.4",
+    "@jjmyers/object-relationship-store": "file:../object-relationship-store/jjmyers-object-relationship-store-1.0.0.tgz"
   },
   "description": "A react store that uses object relationship to automatically normalize and set in state and get data..",
   "keywords": [
@@ -93,8 +94,5 @@
     "global-state"
   ],
   "author": "Joshua Joseph Myers",
-  "license": "ISC",
-  "dependencies": {
-    "@jjmyers/object-relationship-store": "file:../object-relationship-store/jjmyers-object-relationship-store-1.0.0.tgz"
-  }
+  "license": "ISC"
 }
