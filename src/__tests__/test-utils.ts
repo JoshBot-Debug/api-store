@@ -3,6 +3,7 @@ import { useEffect, useRef } from "react";
 
 export const fakeFetch = <T>(result: T, delay: number = 100) => new Promise<T>(resolve => setTimeout(() => resolve(result), delay))
 
+
 export const useRenderCount = (dep?: any[]) => {
   const renderCount = useRef(0);
 

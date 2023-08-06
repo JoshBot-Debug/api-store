@@ -8,7 +8,7 @@ const packageJson = require("./package.json");
 
 export default [
   {
-    input: "src/index.ts",
+    input: "src/index.tsx",
     output: [
       {
         file: packageJson.main,
@@ -30,7 +30,7 @@ export default [
     external: ["react", "react-dom"],
   },
   {
-    input: "src/index.ts",
+    input: "src/index.tsx",
     output: [{ file: "build/index.d.ts", format: "es" }],
     plugins: [dts.default()],
   }
