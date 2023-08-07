@@ -21,11 +21,12 @@ export function useMutation<
   async function makeMutation(...args: A) {
     try {
       setIsLoading(true);
-      const result = await mutate(...args);
+      let result = null;
+      try { result = await mutate(...args); }
+      catch (error) { setError(String(error)); }
       store.upsert(result);
       return result;
     }
-    catch (error: any) { setError(error); }
     finally { setIsLoading(false); }
 
     return null;

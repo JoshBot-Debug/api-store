@@ -151,3 +151,37 @@ it("should mutate useQuery when useMutation is called", async () => {
 
   await waitFor(() => expect(r1.result.current.state).toStrictEqual({ id: 10, createdAt: "Updated" }))
 })
+
+
+it("should mutate using __identify__", async () => {
+
+  store.purge()
+
+  store.upsert(posts, { indexes: [{ index: "homeFeed", key: "1" }] })
+
+  const r1 = renderHook(() => (
+    useQuery({
+      select: {
+        from: "post",
+        // @ts-ignore
+        fields: ["id", "createdAt"],
+        where: { id: 10 }
+      },
+    })
+  ), { wrapper });
+
+  expect(r1.result.current.state).toStrictEqual({ id: 10, createdAt: "2023-06-26T14:24:04.000Z" })
+
+  const r2 = renderHook(() => (
+    useMutation({
+      mutate: async () => {
+        const result = await fakeFetch({ id: 10, createdAt: "Updated" });
+        return { ...result, __identify__: "post" }
+      }
+    })
+  ), { wrapper });
+
+  // Should use __identify__ and succeed in updating
+  await act(() => r2.result.current.mutate())
+  await waitFor(() => expect(r1.result.current.state).toStrictEqual({ id: 10, createdAt: "Updated" }))
+})
