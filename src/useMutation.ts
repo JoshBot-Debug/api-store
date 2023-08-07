@@ -24,7 +24,7 @@ export function useMutation<
       let result = null;
       try { result = await mutate(...args); }
       catch (error) { setError(String(error)); }
-      store.upsert(result);
+      store.upsert(result, config.options);
       return result;
     }
     finally { setIsLoading(false); }
