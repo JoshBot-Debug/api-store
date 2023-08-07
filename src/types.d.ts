@@ -41,7 +41,7 @@ export declare namespace UseAPIStore {
     NextPageParams,
   > {
     index: `${I}-${string}`,
-    select?: Record<N, ORS.Replace<ORS.SelectOptions<N, O>, "where", (object: any) => boolean>>;
+    select?: Partial<Record<N, ORS.Replace<ORS.SelectOptions<N, O>, "where", (object: any) => boolean>>>;
     fetch?: (nextParams?: NextPageParams | null) => Promise<R>;
     getNextPageParams: (result: R) => NextPageParams | null | undefined;
     getData?: (result: R) => O[];
