@@ -33,7 +33,7 @@ export const useStoreIndex = <
   O extends Record<string, any> = Record<string, any>,
 >(
   index: `${I}-${string}`,
-  selector?: Record<string, ORS.Replace<ORS.SelectOptions<N, O>, "where", (object: any) => boolean>>
+  selector?: Partial<Record<N, ORS.Replace<ORS.SelectOptions<N, O>, "where", (object: any) => boolean>>>
 ) => {
 
   const store = useContext(StoreContext)
@@ -42,7 +42,7 @@ export const useStoreIndex = <
 
   return useSyncExternalStore(
     store.subscribe,
-    useCallback(() => store.selectIndex(index, selector), [store, selector])
+    useCallback(() => store.selectIndex<I, N, O>(index, selector as any), [store, selector])
   )
 }
 
