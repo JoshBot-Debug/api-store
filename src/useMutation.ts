@@ -19,17 +19,12 @@ export function useMutation<
   const [isLoading, setIsLoading] = useState(false);
 
   async function makeMutation(...args: A) {
-    try {
-      setIsLoading(true);
-      let result = null;
-      try { result = await mutate(...args); }
-      catch (error) { setError(String(error)); }
-      store.upsert(result, config.options);
-      return result;
-    }
-    finally { setIsLoading(false); }
-
-    return null;
+    setIsLoading(true);
+    let result = null;
+    try { result = await mutate(...args); }
+    catch (error) { setError(String(error)); }
+    store.upsert(result, config.options);
+    return result;
   }
 
   return useMemo(() => ({

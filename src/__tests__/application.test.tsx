@@ -185,3 +185,78 @@ it("should mutate using __identify__", async () => {
   await act(() => r2.result.current.mutate())
   await waitFor(() => expect(r1.result.current.state).toStrictEqual({ id: 10, createdAt: "Updated" }))
 })
+
+
+
+it("should mutate nothing on an empty array response", async () => {
+
+  store.purge()
+
+  store.upsert(posts, { indexes: [{ index: "homeFeed", key: "1" }] })
+  const r2 = renderHook(() => (
+    useMutation({
+      options: { indexes: [{ index: "homeFeed", key: "1000000" }] },
+      mutate: async () => {
+        return []
+      }
+    })
+  ), { wrapper });
+
+  await act(() => r2.result.current.mutate())
+})
+
+
+it("should mutate nothing on an empty array response", async () => {
+
+  store.purge()
+
+  store.upsert(posts, { indexes: [{ index: "homeFeed", key: "1" }] })
+  const r2 = renderHook(() => (
+    useMutation({
+      options: { indexes: [{ index: "homeFeed", key: "1000000" }] },
+      mutate: async () => {
+        return []
+      }
+    })
+  ), { wrapper });
+
+  await act(() => r2.result.current.mutate())
+})
+
+
+it("should mutate nothing on an empty array response", async () => {
+
+  store.purge()
+
+  store.upsert(posts, { indexes: [{ index: "homeFeed", key: "1" }] })
+  
+  const target = posts[0];
+
+  const r1 = renderHook(() => (
+    useQuery({
+      select: {
+        from: "post",
+        // @ts-ignore
+        fields: ["id", "createdAt", "likeCount"],
+        where: { id: target.id }
+      },
+    })
+  ), { wrapper });
+
+
+  const r2 = renderHook(() => (
+    useMutation({
+      options: { indexes: [{ index: "homeFeed", key: "1" }] },
+      mutate: async () => {
+        return [
+          {id: target.id, likeCount: target.likeCount + 1, __identify__: "post"}
+        ]
+      }
+    })
+  ), { wrapper });
+  console.log(r1.result.current.state)
+
+  await act(() => r2.result.current.mutate())
+
+  console.log(r1.result.current.state)
+})
