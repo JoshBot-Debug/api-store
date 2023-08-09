@@ -1,53 +1,57 @@
-# Todo
-
-- ***Possible feature?*** May want to replace context with an external store
-
 # API store
+
+***WARNING: experimental.***
 
 ## Step 1.
 
 ### **Define your objects and their relationship**
 
 ```ts
-const user = createTable("user", {
+const user = createRelationalObject("user", {
 	id: "number",
 	username: "string"
 })
 
-const token = createTable("token", {
-	user: "number",
-	token: "string",
-}, { pk: "user" })
-
-const product = createTable("product", {
+const product = createRelationalObject("product", {
 	id: "number",
 	name: "string"
 })
 
-const wishlist = createTable("wishlist", {
+const wishlist = createRelationalObject("wishlist", {
 	id: "number",
 })
 
 
-user.hasOne(token, "token")
 user.hasOne(wishlist, "wishlist")
 wishlist.hasMany(product, "products")
 
-const model = createModel([
-	user,
-	token,
-	product,
-	wishlist
-])
+
+const store = createStore({
+  relationalCreators: [
+    user,
+    product,
+    wishlist
+  ],
+
+  // Used to identify an object that is upserted in the store.
+  // Optionally, the object can contain a __identify__: "wishlist" field to identify what object it is
+  // using the __identify__ will be faster.
+  identifier: {
+    user: o => "username" in o,
+    product: o => "productName" in o,
+    wishlist: o => "wishlistName" in o,
+  }
+});
+
 
 ```
 
 ## Step 2.
 
-### **Wrap you application in the APIStore provider**
+### **Wrap you application in RelationalStoreProvider**
 
 ```tsx
-<APIStore model={model} ></APIStore>
+<RelationalStoreProvider model={model} ></RelationalStoreProvider>
 ```
 
 ## Step 4.
@@ -57,8 +61,26 @@ const model = createModel([
 
 ```ts
 
-const { result, isFetching, error, refetch } = useQuery({ table: "user", get: { fetch: getUsers } });
+type From = "user" | "wishlist" | "product"
 
-const { mutate, isLoading, error } = useMutation({table: "user", mutate: updateUser});
+// Example useage
+const query = useQuery<From, User, User>({
+  
+  // Optionally add a fetch to get data on mount
+  fetch: () => GetData.request({user: 10}),
+
+  // Select some data from the store
+  select: {
+    from: "user",
+    where: { id: 10 },
+    fields: ["id", "wishlist"],
+    join: [{
+      on: "wishlist",
+      fields: ["id", "products"],
+      join: [{ on: "products", fields: "*" }]
+    }]
+  }
+})
+
 
 ```

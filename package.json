@@ -1,7 +1,10 @@
 {
   "name": "@jjmyers/api-store",
   "version": "0.3.1",
-  "private": true,
+  "private": false,
+  "publishConfig": {
+    "access": "public"
+  },
   "main": "build/index.js",
   "module": "build/index.esm.js",
   "types": "build/index.d.ts",
@@ -13,6 +16,10 @@
     "build": "rm -r ./build & rm jjmyers-api-store-*.tgz & rollup -c --bundleConfigAsCjs && npm pack",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/JoshBot-Debug/api-store.git"
   },
   "files": [
     "build/*"
@@ -83,7 +90,7 @@
     "web-vitals": "^2.1.4"
   },
   "dependencies": {
-    "@jjmyers/object-relationship-store": "file:../object-relationship-store/jjmyers-object-relationship-store-1.0.0.tgz"
+    "@jjmyers/object-relationship-store": "^1.0.2"
   },
   "description": "A react store that uses object relationship to automatically normalize and set in state and get data..",
   "keywords": [
