@@ -90,7 +90,7 @@
     "web-vitals": "^2.1.4"
   },
   "dependencies": {
-    "@jjmyers/object-relationship-store": "^1.0.2"
+    "@jjmyers/object-relationship-store": "^1.0.3"
   },
   "description": "A react store that uses object relationship to automatically normalize and set in state and get data..",
   "keywords": [
