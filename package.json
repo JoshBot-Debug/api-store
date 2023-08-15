@@ -1,6 +1,6 @@
 {
   "name": "@jjmyers/api-store",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "private": false,
   "publishConfig": {
     "access": "public"
@@ -90,7 +90,7 @@
     "web-vitals": "^2.1.4"
   },
   "dependencies": {
-    "@jjmyers/object-relationship-store": "^1.0.3"
+    "@jjmyers/object-relationship-store": "^1.0.4"
   },
   "description": "A react store that uses object relationship to automatically normalize and set in state and get data..",
   "keywords": [
