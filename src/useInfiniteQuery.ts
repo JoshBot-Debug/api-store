@@ -30,14 +30,21 @@ export function useInfiniteQuery<
 
   useEffect(() => {
     if (!enabled || !fetch) return;
+    refresh();
+  }, [config.enabled, ...deps]);
+
+  async function refresh() {
+    if (!enabled || !fetch) return null;
+    store.destroy(index);
     setIsLoading(true);
     setNextPageParams(null);
     setHasNextPage(true);
     setIsFetching(false);
     setError(null);
-    refetch()
-      .finally(() => setIsLoading(false))
-  }, [config.enabled, ...deps]);
+    const result = await refetch(null);
+    setIsLoading(false);
+    return result;
+  }
 
   async function refetch(...args: any[]) {
     if (!hasNextPage) return null;
@@ -72,6 +79,7 @@ export function useInfiniteQuery<
 
   return useMemo(() => ({
     state,
+    refresh,
     refetch,
     fetchNextPage,
     nextPageParams,
