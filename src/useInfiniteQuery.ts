@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { UseAPIStore } from "./types";
 import { useStore, useStoreIndex } from "./store";
-import { withOptions } from ".";
+import { withOptions } from "@jjmyers/object-relationship-store";
 
 export function useInfiniteQuery<
   I extends string,
