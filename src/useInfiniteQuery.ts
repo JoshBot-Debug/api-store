@@ -30,23 +30,29 @@ export function useInfiniteQuery<
 
   useEffect(() => {
     if (!enabled || !fetch) return;
-    refresh();
+    refresh(false);
   }, [config.enabled, ...deps]);
 
-  async function refresh() {
+  
+  async function refresh(clearIndex: boolean = true) {
     if (!enabled || !fetch) return null;
-    store.destroy(index);
     setIsLoading(true);
     setNextPageParams(null);
     setHasNextPage(true);
     setIsFetching(false);
     setError(null);
-    const result = await refetch(null);
+    const result = await makeRequest([], !!clearIndex);
     setIsLoading(false);
     return result;
   }
 
+
   async function refetch(...args: any[]) {
+    return makeRequest(args);
+  }
+
+
+  async function makeRequest(args: any[], clearIndex?: boolean) {
     if (!hasNextPage) return null;
     if (!fetch) throw new Error("You cannot call refetch without passing a fetch function to the hook.");
     try {
@@ -60,6 +66,7 @@ export function useInfiniteQuery<
         setNextPageParams(null);
         setHasNextPage(false);
       }
+      if (clearIndex) store.destroy(index);
       store.upsert(withOptions(data, { __indexes__: [index] }));
       return { result, data };
     }
@@ -71,6 +78,7 @@ export function useInfiniteQuery<
     finally { setIsFetching(false); }
     return null;
   }
+
 
   async function fetchNextPage(...args: any[]) {
     return await refetch(...args);
