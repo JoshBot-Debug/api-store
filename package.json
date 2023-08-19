@@ -2,6 +2,7 @@
   "name": "@jjmyers/api-store",
   "version": "0.3.4",
   "private": false,
+  "type": "module",
   "publishConfig": {
     "access": "public"
   },
@@ -15,6 +16,7 @@
     "start": "react-scripts start",
     "build": "rm -r ./build & rm jjmyers-api-store-*.tgz & rollup -c --bundleConfigAsCjs && npm pack",
     "test": "react-scripts test",
+    "testIndex": "nodemon src/__tests__/index.ts",
     "eject": "react-scripts eject"
   },
   "repository": {
@@ -75,6 +77,7 @@
     "@types/node": "^16.18.38",
     "@types/react": "^18.2.14",
     "@types/react-dom": "^18.2.6",
+    "nodemon": "^3.0.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-scripts": "5.0.1",
@@ -90,7 +93,7 @@
     "web-vitals": "^2.1.4"
   },
   "dependencies": {
-    "@jjmyers/object-relationship-store": "^1.0.5"
+    "@jjmyers/object-relationship-store": "^2.0.2"
   },
   "description": "A react store that uses object relationship to automatically normalize and set in state and get data..",
   "keywords": [

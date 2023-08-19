@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { UseAPIStore } from "./types";
 import { useStore, useStoreIndex } from "./store";
+import { withOptions } from ".";
 
 export function useInfiniteQuery<
   I extends string,
@@ -47,13 +48,12 @@ export function useInfiniteQuery<
       const result = await fetch(...arg);
       const nextParams = getNextPageParams(result);
       const data = getData ? getData(result) : result as unknown as O[];
-      const [i, k] = index.split("-")
       if (nextParams) { setNextPageParams(nextParams); }
       else {
         setNextPageParams(null);
         setHasNextPage(false);
       }
-      store.upsert(data, { indexes: [{ index: i, key: k }] });
+      store.upsert(withOptions(data, { __indexes__: [index] }));
       return { result, data };
     }
     catch (error) {
@@ -69,7 +69,7 @@ export function useInfiniteQuery<
     return await refetch(...args);
   }
 
-  
+
   return useMemo(() => ({
     state,
     refetch,

@@ -1,4 +1,4 @@
-import { ORS } from "@jjmyers/object-relationship-store";
+import { ORS, createStore } from "@jjmyers/object-relationship-store";
 
 export declare namespace UseAPIStore {
 
@@ -68,8 +68,7 @@ export declare namespace UseAPIStore {
     R extends Record<string, any>,
     A extends Array<any>,
   > = {
-    mutate: (...args: A) => Promise<R>;
-    options?: ORS.UpsertOptions<string>;
+    mutate: (...args: A) => Promise<R & ORS.StoreObject<string, string>>;
   }
 
   interface UseMutationReturn<
@@ -78,6 +77,6 @@ export declare namespace UseAPIStore {
   > {
     isLoading: boolean;
     error: any | null;
-    mutate: (...args: A) => Promise<R | null>;
+    mutate: (...args: A) => Promise<(R & ORS.StoreObject<string>) | null>;
   }
 }

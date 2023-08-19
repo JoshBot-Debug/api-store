@@ -1,15 +1,15 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { posts } from "./data";
-import { RelationalStoreProvider, createRelationalObject, createRelationalObjectIndex, createStore, useStoreIndex } from "..";
+import { RelationalStoreProvider, createRelationalObject, createRelationalObjectIndex, createStore, useStoreIndex, withOptions } from "..";
 import { useQuery } from "../useQuery";
 import { fakeFetch, fakePaginatingFetch } from "./test-utils";
 import { useInfiniteQuery } from "../useInfiniteQuery";
 import { useMutation } from "../useMutation";
 
-const user = createRelationalObject("user", { id: "number" });
-const image = createRelationalObject("image", { id: "number" });
-const thumbnail = createRelationalObject("thumbnail", { id: "number" });
-const post = createRelationalObject("post", { id: "number" });
+const user = createRelationalObject("user");
+const image = createRelationalObject("image");
+const thumbnail = createRelationalObject("thumbnail");
+const post = createRelationalObject("post");
 
 image.hasMany(thumbnail, "thumbnails")
 user.hasOne(image, "profileImage")
@@ -26,10 +26,10 @@ const store = createStore({
   relationalCreators: [user, post, image, thumbnail],
   indexes: [homeFeed, users],
   identifier: {
-    'user': o => !!o.username,
-    'image': o => !!o.baseScale,
-    'thumbnail': o => !!o.uri,
-    'post': o => !!o.caption,
+    'user': o => "username" in o,
+    'image': o => "aspectRatio" in o,
+    'thumbnail': o => "uri" in o,
+    'post': o => "caption" in o,
   }
 });
 
@@ -41,7 +41,7 @@ const wrapper = ({ children }: React.PropsWithChildren) => {
 
 it("should get data from a store", async () => {
 
-  store.upsert(posts, { indexes: [{ index: "homeFeed", key: "1" }] })
+  store.upsert(withOptions(posts, { __indexes__: ["homeFeed-1"] }))
 
   const { result } = renderHook(() => (
     useStoreIndex("homeFeed-1", {
@@ -54,7 +54,7 @@ it("should get data from a store", async () => {
 
   expect(result.current?.length).toBe(5)
 
-  act(() => store.upsert({ id: 5, caption: "Hey" }, { indexes: [{ index: "homeFeed", key: "1" }] }))
+  act(() => store.upsert(withOptions({ id: 5 }, { __identify__: "post", __indexes__: ["homeFeed-1"] })))
 
   expect(result.current?.length).toBe(6)
 
@@ -65,7 +65,7 @@ it("should get data from useQuery", async () => {
 
   store.purge()
 
-  store.upsert(posts, { indexes: [{ index: "homeFeed", key: "1" }] })
+  store.upsert(posts)
 
   const r1 = renderHook(() => (
     useQuery({
@@ -126,7 +126,7 @@ it("should mutate useQuery when useMutation is called", async () => {
 
   store.purge()
 
-  store.upsert(posts, { indexes: [{ index: "homeFeed", key: "1" }] })
+  store.upsert(posts)
 
   const r1 = renderHook(() => (
     useQuery({
@@ -142,9 +142,7 @@ it("should mutate useQuery when useMutation is called", async () => {
   expect(r1.result.current.state).toStrictEqual({ id: 10, createdAt: "2023-06-26T14:24:04.000Z" })
 
   const r2 = renderHook(() => (
-    useMutation({
-      mutate: () => fakeFetch({ id: 10, createdAt: "Updated", caption: "Hey" })
-    })
+    useMutation({ mutate: () => fakeFetch({ id: 10, createdAt: "Updated", __identify__: "post" }) })
   ), { wrapper });
 
   await act(() => r2.result.current.mutate())
@@ -157,7 +155,7 @@ it("should mutate using __identify__", async () => {
 
   store.purge()
 
-  store.upsert(posts, { indexes: [{ index: "homeFeed", key: "1" }] })
+  store.upsert(posts)
 
   const r1 = renderHook(() => (
     useQuery({
@@ -173,12 +171,7 @@ it("should mutate using __identify__", async () => {
   expect(r1.result.current.state).toStrictEqual({ id: 10, createdAt: "2023-06-26T14:24:04.000Z" })
 
   const r2 = renderHook(() => (
-    useMutation({
-      mutate: async () => {
-        const result = await fakeFetch({ id: 10, createdAt: "Updated" });
-        return { ...result, __identify__: "post" }
-      }
-    })
+    useMutation({ mutate: () => fakeFetch({ id: 10, createdAt: "Updated", __identify__: "post" }) })
   ), { wrapper });
 
   // Should use __identify__ and succeed in updating
@@ -190,12 +183,12 @@ it("should mutate using __identify__", async () => {
 
 it("should mutate nothing on an empty array response", async () => {
 
-  store.purge()
+  store.purge();
 
-  store.upsert(posts, { indexes: [{ index: "homeFeed", key: "1" }] })
+  store.upsert(posts);
+
   const r2 = renderHook(() => (
     useMutation({
-      options: { indexes: [{ index: "homeFeed", key: "1000000" }] },
       mutate: async () => {
         return []
       }
@@ -203,60 +196,4 @@ it("should mutate nothing on an empty array response", async () => {
   ), { wrapper });
 
   await act(() => r2.result.current.mutate())
-})
-
-
-it("should mutate nothing on an empty array response", async () => {
-
-  store.purge()
-
-  store.upsert(posts, { indexes: [{ index: "homeFeed", key: "1" }] })
-  const r2 = renderHook(() => (
-    useMutation({
-      options: { indexes: [{ index: "homeFeed", key: "1000000" }] },
-      mutate: async () => {
-        return []
-      }
-    })
-  ), { wrapper });
-
-  await act(() => r2.result.current.mutate())
-})
-
-
-it("should mutate nothing on an empty array response", async () => {
-
-  store.purge()
-
-  store.upsert(posts, { indexes: [{ index: "homeFeed", key: "1" }] })
-  
-  const target = posts[0];
-
-  const r1 = renderHook(() => (
-    useQuery({
-      select: {
-        from: "post",
-        // @ts-ignore
-        fields: ["id", "createdAt", "likeCount"],
-        where: { id: target.id }
-      },
-    })
-  ), { wrapper });
-
-
-  const r2 = renderHook(() => (
-    useMutation({
-      options: { indexes: [{ index: "homeFeed", key: "1" }] },
-      mutate: async () => {
-        return [
-          {id: target.id, likeCount: target.likeCount + 1, __identify__: "post"}
-        ]
-      }
-    })
-  ), { wrapper });
-  console.log(r1.result.current.state)
-
-  await act(() => r2.result.current.mutate())
-
-  console.log(r1.result.current.state)
 })

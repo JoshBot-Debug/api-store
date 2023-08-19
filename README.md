@@ -4,6 +4,15 @@
 
 ## Step 1.
 
+```ts
+
+// By default createRelationalObject() looks for
+// the prop "id" to use as a primary key.
+// Optionally, if "id" is not the primary key of the object, you can specify what to use as a primary key like this
+/// const user = createRelationalObject("user", {pk: "number"}, { primaryKey: "pk" });
+
+```
+
 ### **Define your objects and their relationship**
 
 ```ts
