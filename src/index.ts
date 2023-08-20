@@ -1,4 +1,4 @@
-import { createStore, createRelationalObject, createRelationalObjectIndex, type ORS, withOptions } from "@jjmyers/object-relationship-store";
+import { type ORS, createStore, createRelationalObject, createRelationalObjectIndex, withOptions } from "@jjmyers/object-relationship-store";
 import { useStore, useStoreIndex, useStoreSelect, RelationalStoreProvider } from "./store";
 import { useMutation } from "./useMutation";
 import { useQuery } from "./useQuery";

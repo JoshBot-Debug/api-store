@@ -46,12 +46,6 @@ export function useInfiniteQuery<
     return result;
   }
 
-
-  async function refetch(...args: any[]) {
-    return makeRequest(args);
-  }
-
-
   async function makeRequest(args: any[], clearIndex?: boolean) {
     if (!hasNextPage) return null;
     if (!fetch) throw new Error("You cannot call refetch without passing a fetch function to the hook.");
@@ -81,14 +75,13 @@ export function useInfiniteQuery<
 
 
   async function fetchNextPage(...args: any[]) {
-    return await refetch(...args);
+    return await makeRequest(args);
   }
 
 
   return useMemo(() => ({
     state,
     refresh,
-    refetch,
     fetchNextPage,
     nextPageParams,
     isLoading,

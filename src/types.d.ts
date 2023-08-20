@@ -60,7 +60,6 @@ export declare namespace UseAPIStore {
     hasNextPage: boolean;
     error: any | null;
     refresh: () => Promise<{ result: R; data: O[] } | null>;
-    refetch: (...args: any[]) => Promise<{ result: R; data: O[] } | null>;
     fetchNextPage: (...args: any[]) => Promise<{ result: R; data: O[] } | null>;
   }
 

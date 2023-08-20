@@ -78,6 +78,7 @@ it("should get data from useQuery", async () => {
     })
   ), { wrapper });
 
+
   expect(r1.result.current.state).toStrictEqual({ id: 10, createdAt: "2023-06-26T14:24:04.000Z" })
 
   const r2 = renderHook(() => (
