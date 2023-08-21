@@ -41,17 +41,17 @@ export function useInfiniteQuery<
     setHasNextPage(true);
     setIsFetching(false);
     setError(null);
-    const result = await makeRequest([], !!clearIndex);
+    const result = await makeRequest(null, !!clearIndex);
     setIsLoading(false);
     return result;
   }
 
-  async function makeRequest(args: any[], clearIndex?: boolean) {
+  async function makeRequest(args: any[] | null, clearIndex?: boolean) {
     if (!hasNextPage) return null;
     if (!fetch) throw new Error("You cannot call refetch without passing a fetch function to the hook.");
     try {
       setIsFetching(true);
-      const arg = args.length > 0 ? args : [nextPageParams];
+      const arg = !args ? [] : args.length > 0 ? args : [nextPageParams];
       const result = await fetch(...arg);
       const nextParams = getNextPageParams(result);
       const data = getData ? getData(result) : result as unknown as O[];
