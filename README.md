@@ -1,6 +1,5 @@
 # API store
 
-***WARNING: experimental.***
 ### This is an implimentation of https://www.npmjs.com/package/@jjmyers/object-relationship-store
 
 ## Step 1.
