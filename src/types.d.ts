@@ -77,6 +77,6 @@ export declare namespace UseAPIStore {
   > {
     isLoading: boolean;
     error: any | null;
-    mutate: (...args: A) => Promise<(R & ORS.StoreObject<string>) | null>;
+    mutate: (...args: A) => Promise<(R & ORS.StoreObject<string, string>) | null>;
   }
 }
