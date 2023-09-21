@@ -11,7 +11,7 @@ export function useMutation<
 ): UseAPIStore.UseMutationReturn<R, A> {
 
   const {
-    mutate
+    mutate,
   } = config;
 
   const store = useStore();
@@ -22,7 +22,10 @@ export function useMutation<
     setIsLoading(true);
     let result = null;
     try { result = await mutate(...args); }
-    catch (error) { setError(String(error)); }
+    catch (error) {
+      setError(String(error));
+      if (config.throwError) throw error;
+    }
     if (result) store.upsert(result);
     return result;
   }

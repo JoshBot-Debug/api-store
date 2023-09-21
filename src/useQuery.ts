@@ -42,6 +42,7 @@ export function useQuery<
     catch (error) {
       setError(error);
       setResult(null);
+      if (config.throwError) throw error;
     }
     finally { setIsFetching(false); }
     return null;
