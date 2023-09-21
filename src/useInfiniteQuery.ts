@@ -68,7 +68,6 @@ export function useInfiniteQuery<
       setError(error);
       setNextPageParams(null);
       setHasNextPage(false);
-      if (config.throwError) throw error;
     }
     finally { setIsFetching(false); }
     return null;
