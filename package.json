@@ -20,7 +20,7 @@
     "eject": "react-scripts eject"
   },
   "dependencies": {
-    "@jjmyers/object-relationship-store": "^2.0.21"
+    "@jjmyers/object-relationship-store": "^2.0.22"
   },
   "repository": {
     "type": "git",
