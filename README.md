@@ -1,4 +1,10 @@
-# API store
+## API store
+A react.js global state manager. Maintains relationships between objects. The idea here is that all you have to do is fetch data and then use it. Once the store is setup correctly, mutations, queries and all other actions will cause state to update wherever necessary with little to no intervention from your side.
+
+## ☕ Support My Work
+Hey there! 👋 If my npm libraries have made your coding journey easier or sparked creativity, consider supporting my work with a virtual coffee. Your generosity keeps the code flowing and inspires more innovations! ☕🚀
+
+[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/joshuajosephmyers)
 
 ### This is an implimentation of https://www.npmjs.com/package/@jjmyers/object-relationship-store
 
