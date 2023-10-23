@@ -23,7 +23,7 @@ export function useMutation<
     let result = null;
     try { result = await mutate(...args); }
     catch (error) { setError(String(error)); }
-    if (result) store.upsert(result);
+    if (result) store.mutate(result);
     return result;
   }
 

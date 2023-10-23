@@ -61,7 +61,7 @@ export function useInfiniteQuery<
         setHasNextPage(false);
       }
       if (clearIndex) store.destroy(index);
-      store.upsert(withOptions(data, { __indexes__: [index] }));
+      store.mutate(withOptions(data, { __indexes__: [index] }));
       return { result, data };
     }
     catch (error) {

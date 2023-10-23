@@ -41,7 +41,7 @@ const wrapper = ({ children }: React.PropsWithChildren) => {
 
 it("should get data from a store", async () => {
 
-  store.upsert(withOptions(posts, { __indexes__: ["homeFeed-1"] }))
+  store.mutate(withOptions(posts, { __indexes__: ["homeFeed-1"] }))
 
   const { result } = renderHook(() => (
     useStoreIndex("homeFeed-1", {
@@ -54,7 +54,7 @@ it("should get data from a store", async () => {
 
   expect(result.current?.length).toBe(5)
 
-  act(() => store.upsert(withOptions({ id: 5 }, { __identify__: "post", __indexes__: ["homeFeed-1"] })))
+  act(() => store.mutate(withOptions({ id: 5 }, { __identify__: "post", __indexes__: ["homeFeed-1"] })))
 
   expect(result.current?.length).toBe(6)
 
@@ -65,7 +65,7 @@ it("should get data from useQuery", async () => {
 
   store.purge()
 
-  store.upsert(posts)
+  store.mutate(posts)
 
   const r1 = renderHook(() => (
     useQuery({
@@ -127,7 +127,7 @@ it("should mutate useQuery when useMutation is called", async () => {
 
   store.purge()
 
-  store.upsert(posts)
+  store.mutate(posts)
 
   const r1 = renderHook(() => (
     useQuery({
@@ -156,7 +156,7 @@ it("should mutate using __identify__", async () => {
 
   store.purge()
 
-  store.upsert(posts)
+  store.mutate(posts)
 
   const r1 = renderHook(() => (
     useQuery({
@@ -186,7 +186,7 @@ it("should mutate nothing on an empty array response", async () => {
 
   store.purge();
 
-  store.upsert(posts);
+  store.mutate(posts);
 
   const r2 = renderHook(() => (
     useMutation({

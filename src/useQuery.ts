@@ -35,7 +35,7 @@ export function useQuery<
       setIsFetching(true);
       const result = await fetch(...args);
       const data = getData ? getData(result) : result as unknown as O;
-      store.upsert(data);
+      store.mutate(data);
       setResult(result);
       return { result, data };
     }
