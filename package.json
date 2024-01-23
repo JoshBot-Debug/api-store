@@ -1,6 +1,6 @@
 {
   "name": "@jjmyers/api-store",
-  "version": "1.1.22",
+  "version": "1.1.23",
   "private": false,
   "type": "module",
   "publishConfig": {
@@ -20,7 +20,7 @@
     "eject": "react-scripts eject"
   },
   "dependencies": {
-    "@jjmyers/object-relationship-store": "^3.0.4"
+    "@jjmyers/object-relationship-store": "^3.0.5"
   },
   "repository": {
     "type": "git",
