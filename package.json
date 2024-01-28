@@ -1,6 +1,6 @@
 {
   "name": "@jjmyers/api-store",
-  "version": "1.1.23",
+  "version": "1.1.24",
   "private": false,
   "type": "module",
   "publishConfig": {
@@ -10,7 +10,8 @@
   "module": "build/index.esm.js",
   "types": "build/index.d.ts",
   "overrides": {
-    "nth-check": "^2.0.1"
+    "nth-check": "^2.0.1",
+    "postcss": "^8.4.31"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -20,7 +21,7 @@
     "eject": "react-scripts eject"
   },
   "dependencies": {
-    "@jjmyers/object-relationship-store": "^3.0.5"
+    "@jjmyers/object-relationship-store": "^3.0.6"
   },
   "repository": {
     "type": "git",

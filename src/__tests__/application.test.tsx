@@ -33,11 +33,9 @@ const store = createStore({
   }
 });
 
-
 const wrapper = ({ children }: React.PropsWithChildren) => {
   return <RelationalStoreProvider store={store}>{children}</RelationalStoreProvider>
 }
-
 
 it("should get data from a store", async () => {
 
@@ -60,6 +58,27 @@ it("should get data from a store", async () => {
 
 })
 
+
+it("should get data from a store", async () => {
+
+  store.mutate(withOptions(posts, { __indexes__: ["homeFeed-1"] }))
+
+  const { result } = renderHook(() => (
+    useStoreIndex("homeFeed-1", {
+      post: {
+        from: "post",
+        fields: ["id"],
+      }
+    })
+  ), { wrapper });
+
+  expect(result.current?.length).toBe(5)
+
+  act(() => store.mutate(withOptions({ id: 5 }, { __identify__: "post", __indexes__: ["homeFeed-1"] })))
+
+  expect(result.current?.length).toBe(6)
+
+})
 
 it("should get data from useQuery", async () => {
 
@@ -97,7 +116,6 @@ it("should get data from useQuery", async () => {
   await waitFor(() => expect(r2.result.current.result).toStrictEqual({ id: 10, createdAt: "Updated", caption: "Hey" }))
 })
 
-
 it("should get data from useInfiniteQuery", async () => {
 
   store.purge()
@@ -121,7 +139,6 @@ it("should get data from useInfiniteQuery", async () => {
   await act(() => r1.result.current.fetchNextPage())
   await waitFor(() => expect(r1.result.current.state?.length).toStrictEqual(5))
 })
-
 
 it("should mutate useQuery when useMutation is called", async () => {
 
@@ -151,7 +168,6 @@ it("should mutate useQuery when useMutation is called", async () => {
   await waitFor(() => expect(r1.result.current.state).toStrictEqual({ id: 10, createdAt: "Updated" }))
 })
 
-
 it("should mutate using __identify__", async () => {
 
   store.purge()
@@ -179,8 +195,6 @@ it("should mutate using __identify__", async () => {
   await act(() => r2.result.current.mutate())
   await waitFor(() => expect(r1.result.current.state).toStrictEqual({ id: 10, createdAt: "Updated" }))
 })
-
-
 
 it("should mutate nothing on an empty array response", async () => {
 
