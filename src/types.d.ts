@@ -68,6 +68,7 @@ export declare namespace UseAPIStore {
     R extends Record<string, any>,
     A extends Array<any>,
   > = {
+    throwError?: boolean;
     mutate: (...args: A) => Promise<R & ORS.StoreObject<string, string>>;
   }
 

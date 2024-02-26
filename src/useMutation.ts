@@ -21,6 +21,7 @@ export function useMutation<
     try {
       result = await mutate(...args);
     } catch (error) {
+      if (config.throwError) throw error;
       setError(String(error));
     } finally {
       setIsLoading(false);
