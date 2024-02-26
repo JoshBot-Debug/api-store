@@ -7,12 +7,9 @@ export function useMutation<
   A extends Array<any>
 >(
   config: UseAPIStore.UseMutationConfig<R, A>,
-  deps: any[] = [],
+  deps: any[] = []
 ): UseAPIStore.UseMutationReturn<R, A> {
-
-  const {
-    mutate
-  } = config;
+  const { mutate } = config;
 
   const store = useStore();
   const [error, setError] = useState<any | null>(null);
@@ -21,15 +18,23 @@ export function useMutation<
   async function makeMutation(...args: A) {
     setIsLoading(true);
     let result = null;
-    try { result = await mutate(...args); }
-    catch (error) { setError(String(error)); }
+    try {
+      result = await mutate(...args);
+    } catch (error) {
+      setError(String(error));
+    } finally {
+      setIsLoading(false);
+    }
     if (result) store.mutate(result);
     return result;
   }
 
-  return useMemo(() => ({
-    error,
-    isLoading,
-    mutate: makeMutation,
-  }), [isLoading, error, ...deps])
+  return useMemo(
+    () => ({
+      error,
+      isLoading,
+      mutate: makeMutation,
+    }),
+    [isLoading, error, ...deps]
+  );
 }
