@@ -23,7 +23,7 @@ export function useInfiniteQuery<
   const store = useStore();
   const state = useStoreIndex(index, select);
   const [error, setError] = useState<any | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(enabled);
   const [isFetching, setIsFetching] = useState(false);
   const [nextPageParams, setNextPageParams] = useState<NextPageParams | null>(null);
   const [hasNextPage, setHasNextPage] = useState(true);
