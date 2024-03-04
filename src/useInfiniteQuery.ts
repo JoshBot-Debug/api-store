@@ -21,7 +21,7 @@ export function useInfiniteQuery<
   } = config;
 
   const store = useStore();
-  const state = useStoreIndex(index, select);
+  const state = useStoreIndex(index, select, deps);
   const [error, setError] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(enabled);
   const [isFetching, setIsFetching] = useState(false);
