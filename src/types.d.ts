@@ -69,7 +69,7 @@ export declare namespace UseAPIStore {
     A extends Array<any>,
   > = {
     throwError?: boolean;
-    mutate: (...args: A) => Promise<R & ORS.StoreObject<string, string>>;
+    mutate: (...args: A) => Promise<R & ORS.StoreObject<string, string> | null>;
   }
 
   interface UseMutationReturn<
