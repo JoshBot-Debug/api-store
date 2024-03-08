@@ -21,7 +21,6 @@ export function useMutation<
     try {
       result = await mutate(...args);
     } catch (error) {
-      if (config.throwError) throw error;
       setError(String(error));
     } finally {
       setIsLoading(false);
@@ -29,6 +28,8 @@ export function useMutation<
     if (result) store.mutate(result);
     return result;
   }
+
+  if (config.throwError) throw new Error(error);
 
   return useMemo(
     () => ({

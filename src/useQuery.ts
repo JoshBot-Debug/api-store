@@ -12,7 +12,7 @@ export function useQuery<
     select,
     enabled = true,
     fetch,
-    getData
+    getData,
   } = config;
 
   const store = useStore();
@@ -46,6 +46,8 @@ export function useQuery<
     finally { setIsFetching(false); }
     return null;
   }
+
+  if (config.throwError) throw new Error(error);
 
   return useMemo(() => ({
     state,

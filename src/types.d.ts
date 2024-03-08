@@ -19,6 +19,7 @@ export declare namespace UseAPIStore {
     fetch?: (...args: any[]) => Promise<R>;
     getData?: (result: R) => O;
     enabled?: boolean;
+    throwError?: boolean;
   }
 
   interface UseQueryReturn<
@@ -46,6 +47,7 @@ export declare namespace UseAPIStore {
     getNextPageParams: (result: R) => NextPageParams | null | undefined;
     getData?: (result: R) => O[];
     enabled?: boolean;
+    throwError?: boolean;
   }
 
   interface UseInfiniteQueryReturn<

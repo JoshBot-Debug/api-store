@@ -73,16 +73,12 @@ export function useInfiniteQuery<
     return null;
   }
 
-
-  async function fetchNextPage(...args: any[]) {
-    return await makeRequest(args);
-  }
-
+  if (config.throwError) throw new Error(error);
 
   return useMemo(() => ({
     state,
     refresh,
-    fetchNextPage,
+    fetchNextPage: makeRequest,
     nextPageParams,
     isLoading,
     hasNextPage,
