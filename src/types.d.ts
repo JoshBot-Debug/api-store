@@ -1,19 +1,18 @@
 import { ORS, createStore } from "@jjmyers/object-relationship-store";
 
 export declare namespace UseAPIStore {
-
   interface RelationalStoreProps<
     N extends string = string,
     I extends string = string,
-    O extends string = string,
+    O extends string = string
   > extends React.PropsWithChildren {
-    store: ORS.Store<N, I, O>
+    store: ORS.Store<N, I, O>;
   }
 
   interface UseQueryConfig<
     N extends string,
     O extends Record<string, any>,
-    R extends Record<string, any>,
+    R extends Record<string, any>
   > {
     select: ORS.SelectOptions<N, O>;
     fetch?: (...args: any[]) => Promise<R>;
@@ -24,7 +23,7 @@ export declare namespace UseAPIStore {
 
   interface UseQueryReturn<
     O extends Record<string, any>,
-    R extends Record<string, any>,
+    R extends Record<string, any>
   > {
     state: O | O[] | null;
     result: R | null;
@@ -33,16 +32,20 @@ export declare namespace UseAPIStore {
     refetch: (...args: any[]) => Promise<{ result: R; data: O } | null>;
   }
 
-
   interface UseInfiniteQueryConfig<
     I extends string,
     N extends string,
     O extends Record<string, any>,
     R extends Record<string, any>,
-    NextPageParams,
+    NextPageParams
   > {
-    index: `${I}-${string}`,
-    select?: Partial<Record<N, ORS.Replace<ORS.SelectOptions<N, O>, "where", (object: any) => boolean>>>;
+    index: `${I}-${string}`;
+    select?: Partial<
+      Record<
+        N,
+        ORS.Replace<ORS.SelectOptions<N, O>, "where", (object: any) => boolean>
+      >
+    >;
     fetch?: (nextParams?: NextPageParams | null) => Promise<R>;
     getNextPageParams: (result: R) => NextPageParams | null | undefined;
     getData?: (result: R) => O[];
@@ -53,7 +56,7 @@ export declare namespace UseAPIStore {
   interface UseInfiniteQueryReturn<
     O extends Record<string, any>,
     R extends Record<string, any>,
-    NextPageParams,
+    NextPageParams
   > {
     state: O[] | null;
     isFetching: boolean;
@@ -65,21 +68,24 @@ export declare namespace UseAPIStore {
     fetchNextPage: (...args: any[]) => Promise<{ result: R; data: O[] } | null>;
   }
 
-
   type UseMutationConfig<
     R extends Record<string, any>,
-    A extends Array<any>,
+    A extends Array<any>
   > = {
     throwError?: boolean;
-    mutate: (...args: A) => Promise<R & ORS.StoreObject<string, string> | null>;
-  }
+    mutate: (
+      ...args: A
+    ) => Promise<(R extends (ORS.StoreObject<string, string> | ORS.StoreObject<string, string>[]) ? R : & ORS.StoreObject<string, string>) | null>;
+  };
 
   interface UseMutationReturn<
     R extends Record<string, any>,
-    A extends Array<any>,
+    A extends Array<any>
   > {
     isLoading: boolean;
     error: any | null;
-    mutate: (...args: A) => Promise<(R & ORS.StoreObject<string, string>) | null>;
+    mutate: (
+      ...args: A
+    ) => Promise<(R extends (ORS.StoreObject<string, string> | ORS.StoreObject<string, string>[]) ? R : & ORS.StoreObject<string, string>) | null>;
   }
 }
