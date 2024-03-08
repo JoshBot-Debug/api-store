@@ -47,7 +47,7 @@ export function useQuery<
     return null;
   }
 
-  if (config.throwError) throw new Error(error);
+  if (config.throwError && error !== null) throw new Error(error);
 
   return useMemo(() => ({
     state,
