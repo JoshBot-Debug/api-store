@@ -51,6 +51,7 @@ export function useInfiniteQuery<
     if (!fetch) throw new Error("You cannot call refetch without passing a fetch function to the hook.");
     try {
       setIsFetching(true);
+      setError(null);
       const arg = !args ? [] : args.length > 0 ? args : [nextPageParams];
       const result = await fetch(...arg);
       const nextParams = getNextPageParams(result);
@@ -73,7 +74,7 @@ export function useInfiniteQuery<
     return null;
   }
 
-  if (config.throwError && error !== null) throw new Error(error);
+  if (config.throwError && error !== null) throw error;
 
   return useMemo(() => ({
     state,

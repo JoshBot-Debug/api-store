@@ -17,6 +17,7 @@ export function useMutation<
 
   async function makeMutation(...args: A) {
     setIsLoading(true);
+    setError(null);
     let result = null;
     try {
       result = await mutate(...args);
@@ -29,7 +30,7 @@ export function useMutation<
     return result;
   }
 
-  if (config.throwError && error !== null) throw new Error(error);
+  if (config.throwError && error !== null) throw error;
 
   return useMemo(
     () => ({

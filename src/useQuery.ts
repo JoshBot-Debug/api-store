@@ -33,6 +33,7 @@ export function useQuery<
     if (!fetch) throw new Error("You cannot call refetch without passing a fetch function to the hook.");
     try {
       setIsFetching(true);
+      setError(null);
       const result = await fetch(...args);
       const data = getData ? getData(result) : result as unknown as O;
       store.mutate(data);
@@ -47,7 +48,7 @@ export function useQuery<
     return null;
   }
 
-  if (config.throwError && error !== null) throw new Error(error);
+  if (config.throwError && error !== null) throw error;
 
   return useMemo(() => ({
     state,
