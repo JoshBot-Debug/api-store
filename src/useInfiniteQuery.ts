@@ -37,10 +37,6 @@ export function useInfiniteQuery<
   async function refresh(clearIndex: boolean = true) {
     if (!enabled || !fetch) return null;
     setIsLoading(true);
-    setNextPageParams(null);
-    setHasNextPage(true);
-    setIsFetching(false);
-    setError(null);
     const result = await makeRequest(null, !!clearIndex);
     setIsLoading(false);
     return result;
@@ -56,7 +52,10 @@ export function useInfiniteQuery<
       const result = await fetch(...arg);
       const nextParams = getNextPageParams(result);
       const data = getData ? getData(result) : result as unknown as O[];
-      if (nextParams) { setNextPageParams(nextParams); }
+      if (nextParams) { 
+        setNextPageParams(nextParams);
+        setHasNextPage(true);
+       }
       else {
         setNextPageParams(null);
         setHasNextPage(false);
