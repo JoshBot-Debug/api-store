@@ -31,7 +31,7 @@ export function useInfiniteQuery<
   useEffect(() => {
     if (!enabled || !fetch) return;
     refresh(false);
-  }, [config.enabled, ...deps]);
+  }, [index, config.enabled, ...deps]);
 
   
   async function refresh(clearIndex: boolean = true) {
@@ -47,7 +47,7 @@ export function useInfiniteQuery<
   }
 
   async function makeRequest(args: any[] | null, clearIndex?: boolean) {
-    if (!hasNextPage) return null;
+    if (args !== null && !hasNextPage) return null;
     if (!fetch) throw new Error("You cannot call refetch without passing a fetch function to the hook.");
     try {
       setIsFetching(true);
