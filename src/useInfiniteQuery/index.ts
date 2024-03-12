@@ -1,73 +1,8 @@
 import { Reducer, useEffect, useMemo, useReducer } from "react";
-import { UseAPIStore } from "./types";
-import { useStore, useStoreIndex } from "./store";
 import { withOptions } from "@jjmyers/object-relationship-store";
-
-interface State<NextPageParams> {
-  error: string | null;
-  isLoading: boolean;
-  isFetching: boolean;
-  hasNextPage: boolean;
-  nextPageParams: NextPageParams | null;
-}
-
-interface Action {
-  type:
-    | "refresh"
-    | "isLoading"
-    | "startRequest"
-    | "handleNextPage"
-    | "endRequest"
-    | "error";
-  payload?: any;
-}
-
-const initialState: State<any> = {
-  error: null,
-  isLoading: false,
-  isFetching: false,
-  nextPageParams: null,
-  hasNextPage: true,
-};
-
-function reducer<NextPageParams>(
-  state: State<NextPageParams>,
-  action: Action
-): State<NextPageParams> {
-  switch (action.type) {
-    case "refresh":
-      return initialState;
-
-    case "isLoading":
-      return { ...state, isLoading: action.payload };
-
-    case "startRequest":
-      return { ...state, error: null, isFetching: true };
-
-    case "handleNextPage":
-      return {
-        ...state,
-        nextPageParams: action.payload ?? null,
-        hasNextPage: !!action.payload,
-      };
-
-    case "endRequest":
-      return { ...state, isFetching: false };
-
-    case "error":
-      return {
-        ...state,
-        error: action.payload,
-        nextPageParams: null,
-        hasNextPage: false,
-        isFetching: false,
-        isLoading: false,
-      };
-
-    default:
-      throw new Error("Unhandled action.");
-  }
-}
+import { UseAPIStore } from "../types";
+import { useStore, useStoreIndex } from "../store";
+import reducer, { Action, State, initialState } from "./reducer";
 
 export function useInfiniteQuery<
   I extends string,
@@ -101,14 +36,14 @@ export function useInfiniteQuery<
     refresh();
   }, [index, config.enabled, ...deps]);
 
-  async function refresh() {
-    dispatch({ type: "isLoading", payload: true });
+  async function refresh(nextPageParams?: NextPageParams) {
+    dispatch({ type: "startLoading", payload: nextPageParams });
     const result = await fetchNextPage();
     if (result?.data) {
       store.destroy(index);
       store.mutate(withOptions(result.data, { __indexes__: [index] }));
     }
-    dispatch({ type: "isLoading", payload: false });
+    dispatch({ type: "endLoading" });
     return result;
   }
 

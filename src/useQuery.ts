@@ -16,7 +16,7 @@ export function useQuery<
   } = config;
 
   const store = useStore();
-  const state = useStoreSelect(select);
+  const state = useStoreSelect(select, deps);
   const [result, setResult] = useState<R | null>(null);
   const [error, setError] = useState<any | null>(null);
   const [isFetching, setIsFetching] = useState(enabled);
