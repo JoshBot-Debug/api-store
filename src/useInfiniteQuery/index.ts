@@ -32,18 +32,17 @@ export function useInfiniteQuery<
   );
 
   useEffect(() => {
-    dispatch({ type: "refresh" });
     refresh();
   }, [index, config.enabled, ...deps]);
 
   async function refresh(nextPageParams?: NextPageParams) {
-    dispatch({ type: "startLoading", payload: nextPageParams });
-    const result = await fetchNextPage();
+    dispatch({ type: "startRefreshing" });
+    const result = await fetchNextPage(nextPageParams);
     if (result?.data) {
       store.destroy(index);
       store.mutate(withOptions(result.data, { __indexes__: [index] }));
     }
-    dispatch({ type: "endLoading" });
+    dispatch({ type: "endRefreshing" });
     return result;
   }
 

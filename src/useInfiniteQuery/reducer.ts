@@ -8,9 +8,8 @@ export interface State<NextPageParams> {
 
 export interface Action {
   type:
-    | "refresh"
-    | "startLoading"
-    | "endLoading"
+    | "startRefreshing"
+    | "endRefreshing"
     | "startRequest"
     | "handleNextPage"
     | "endRequest"
@@ -31,17 +30,13 @@ export default function reducer<NextPageParams>(
   action: Action
 ): State<NextPageParams> {
   switch (action.type) {
-    case "refresh":
-      return initialState;
-
-    case "startLoading":
+    case "startRefreshing":
       return {
-        ...state,
+        ...initialState,
         isLoading: true,
-        nextPageParams: action.payload ?? null,
       };
 
-    case "endLoading":
+    case "endRefreshing":
       return { ...state, isLoading: false };
 
     case "startRequest":

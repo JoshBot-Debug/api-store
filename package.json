@@ -1,6 +1,6 @@
 {
   "name": "@jjmyers/api-store",
-  "version": "1.2.2",
+  "version": "1.2.5",
   "private": false,
   "type": "module",
   "publishConfig": {
