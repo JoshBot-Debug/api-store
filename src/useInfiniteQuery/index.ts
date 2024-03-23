@@ -32,7 +32,7 @@ export function useInfiniteQuery<
   );
 
   useEffect(() => {
-    refresh();
+    if (enabled) refresh();
   }, [index, config.enabled, ...deps]);
 
   async function refresh(nextPageParams?: NextPageParams) {
