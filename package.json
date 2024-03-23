@@ -21,7 +21,7 @@
     "eject": "react-scripts eject"
   },
   "dependencies": {
-    "@jjmyers/object-relationship-store": "^3.2.3"
+    "@jjmyers/object-relationship-store": "^3.2.4"
   },
   "repository": {
     "type": "git",
