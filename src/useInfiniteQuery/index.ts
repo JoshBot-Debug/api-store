@@ -62,6 +62,8 @@ export function useInfiniteQuery<
       const data = getData ? getData(result) : (result as unknown as O[]);
 
       dispatch({ type: "handleNextPage", payload: nextParams });
+      if (data)
+        store.mutate(withOptions(result.data, { __indexes__: [index] }));
 
       return { result, data };
     } catch (error) {
