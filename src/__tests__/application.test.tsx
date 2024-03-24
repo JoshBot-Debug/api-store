@@ -1,10 +1,10 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { posts } from "./data";
-import { RelationalStoreProvider, createRelationalObject, createRelationalObjectIndex, createStore, useStoreIndex, withOptions } from "..";
-import { useQuery } from "../useQuery";
+import { RelationalStoreProvider, createRelationalObject, createRelationalObjectIndex, createStore, useStoreIndex, withOptions } from "../../lib";
+import { useQuery } from "../../lib/useQuery";
 import { fakeFetch, fakePaginatingFetch } from "./test-utils";
-import { useInfiniteQuery } from "../useInfiniteQuery";
-import { useMutation } from "../useMutation";
+import { useInfiniteQuery } from "../../lib/useInfiniteQuery";
+import { useMutation } from "../../lib/useMutation";
 
 const user = createRelationalObject("user");
 const image = createRelationalObject("image");
@@ -55,29 +55,6 @@ it("should get data from a store", async () => {
   act(() => store.mutate(withOptions({ id: 5 }, { __identify__: "post", __indexes__: ["homeFeed-1"] })))
 
   expect(result.current?.length).toBe(6)
-
-})
-
-
-it("should get data from a store", async () => {
-
-  store.mutate(withOptions(posts, { __indexes__: ["homeFeed-1"] }))
-
-  const { result } = renderHook(() => (
-    useStoreIndex("homeFeed-1", {
-      post: {
-        from: "post",
-        fields: ["id"],
-      }
-    })
-  ), { wrapper });
-
-  expect(result.current?.length).toBe(5)
-
-  act(() => store.mutate(withOptions({ id: 5 }, { __identify__: "post", __indexes__: ["homeFeed-1"] })))
-
-  expect(result.current?.length).toBe(6)
-
 })
 
 it("should get data from useQuery", async () => {
