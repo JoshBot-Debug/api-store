@@ -26,7 +26,7 @@ export default [
       typescript({
         include: ["lib/**"],
         declaration: true,
-        declarationDir: "build/types"
+        declarationDir: "build"
       }),
       terser()
     ],
