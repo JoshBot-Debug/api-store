@@ -46,7 +46,7 @@ export function useInfiniteQuery<
     return result;
   }
 
-  async function fetchNextPage(...args: any[]) {
+  async function fetchNextPage(nextPageParams?: NextPageParams) {
     if (!fetch)
       throw new Error(
         "You cannot call refetch without passing a fetch function to the hook."
@@ -56,7 +56,7 @@ export function useInfiniteQuery<
       dispatch({ type: "startRequest" });
 
       const result = await fetch(
-        ...(args.length > 0 ? args : [local.nextPageParams])
+        nextPageParams !== undefined ? nextPageParams : local.nextPageParams
       );
       const nextParams = getNextPageParams(result);
       const data = getData ? getData(result) : (result as unknown as O[]);
