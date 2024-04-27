@@ -32,10 +32,10 @@ export function useInfiniteQuery<
   );
 
   useEffect(() => {
-    if (enabled) refresh();
+    if (enabled) refresh(null);
   }, [index, config.enabled, ...deps]);
 
-  async function refresh(nextPageParams?: NextPageParams) {
+  async function refresh(nextPageParams?: NextPageParams | null) {
     dispatch({ type: "startRefreshing" });
     const result = await fetchNextPage(nextPageParams);
     if (result?.data) {
@@ -46,7 +46,7 @@ export function useInfiniteQuery<
     return result;
   }
 
-  async function fetchNextPage(nextPageParams?: NextPageParams) {
+  async function fetchNextPage(nextPageParams?: NextPageParams | null) {
     if (!fetch)
       throw new Error(
         "You cannot call refetch without passing a fetch function to the hook."
@@ -82,6 +82,6 @@ export function useInfiniteQuery<
       fetchNextPage,
       ...local,
     }),
-    [local, state, index]
+    [local, state]
   );
 }
