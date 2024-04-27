@@ -82,6 +82,6 @@ export function useInfiniteQuery<
       fetchNextPage,
       ...local,
     }),
-    [local, state]
+    [local, state, index]
   );
 }
