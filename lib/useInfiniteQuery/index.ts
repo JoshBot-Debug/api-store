@@ -32,10 +32,10 @@ export function useInfiniteQuery<
   );
 
   useEffect(() => {
-    if (enabled) refresh(null);
+    if (enabled) refresh();
   }, [index, config.enabled, ...deps]);
 
-  async function refresh(nextPageParams?: NextPageParams | null) {
+  async function refresh(nextPageParams: NextPageParams | null = null) {
     dispatch({ type: "startRefreshing" });
     const result = await fetchNextPage(nextPageParams);
     if (result?.data) {
