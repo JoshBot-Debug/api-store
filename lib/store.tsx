@@ -31,7 +31,8 @@ export const useStoreSelect = <
 
   return useSyncExternalStore(
     store.subscribe,
-    useCallback(() => store.select(selector), deps)
+    useCallback(() => store.select(selector), deps),
+    () => store.select(selector)
   );
 };
 
@@ -61,7 +62,8 @@ export const useStoreIndex = <
     useCallback(
       () => store.selectIndex<I, N, O>(index, selector as any),
       [index, ...deps]
-    )
+    ),
+    () => store.selectIndex<I, N, O>(index, selector as any)
   );
 };
 
