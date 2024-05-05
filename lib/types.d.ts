@@ -19,6 +19,7 @@ export declare namespace UseAPIStore {
     getData?: (result: R) => O;
     enabled?: boolean;
     throwError?: boolean;
+    getServerSnapshot?: () => O[];
   }
 
   interface UseQueryReturn<
@@ -51,6 +52,7 @@ export declare namespace UseAPIStore {
     getData?: (result: R) => O[];
     enabled?: boolean;
     throwError?: boolean;
+    getServerSnapshot?: () => O[];
   }
 
   interface UseInfiniteQueryReturn<
@@ -64,7 +66,9 @@ export declare namespace UseAPIStore {
     nextPageParams: NextPageParams | null;
     hasNextPage: boolean;
     error: any | null;
-    refresh: (nextPageParams?: NextPageParams) => Promise<{ result: R; data: O[] } | null>;
+    refresh: (
+      nextPageParams?: NextPageParams
+    ) => Promise<{ result: R; data: O[] } | null>;
     fetchNextPage: (...args: any[]) => Promise<{ result: R; data: O[] } | null>;
   }
 
@@ -75,7 +79,14 @@ export declare namespace UseAPIStore {
     throwError?: boolean;
     mutate: (
       ...args: A
-    ) => Promise<(R extends (ORS.StoreObject<string, string> | ORS.StoreObject<string, string>[]) ? R : & ORS.StoreObject<string, string>) | null>;
+    ) => Promise<
+      | (R extends
+          | ORS.StoreObject<string, string>
+          | ORS.StoreObject<string, string>[]
+          ? R
+          : ORS.StoreObject<string, string>)
+      | null
+    >;
   };
 
   interface UseMutationReturn<
@@ -86,6 +97,13 @@ export declare namespace UseAPIStore {
     error: any | null;
     mutate: (
       ...args: A
-    ) => Promise<(R extends (ORS.StoreObject<string, string> | ORS.StoreObject<string, string>[]) ? R : & ORS.StoreObject<string, string>) | null>;
+    ) => Promise<
+      | (R extends
+          | ORS.StoreObject<string, string>
+          | ORS.StoreObject<string, string>[]
+          ? R
+          : ORS.StoreObject<string, string>)
+      | null
+    >;
   }
 }

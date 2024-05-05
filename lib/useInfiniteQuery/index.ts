@@ -21,10 +21,11 @@ export function useInfiniteQuery<
     getNextPageParams,
     fetch,
     getData,
+    getServerSnapshot,
   } = config;
 
   const store = useStore();
-  const state = useStoreIndex(index, select, deps);
+  const state = useStoreIndex(index, select, deps, getServerSnapshot);
 
   const [local, dispatch] = useReducer<Reducer<State<NextPageParams>, Action>>(
     reducer,

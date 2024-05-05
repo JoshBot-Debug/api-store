@@ -6,17 +6,14 @@ export function useQuery<
   N extends string,
   O extends Record<string, any>,
   R extends Record<string, any>
->(config: UseAPIStore.UseQueryConfig<N, O, R>, deps: any[] = []): UseAPIStore.UseQueryReturn<O, R> {
-
-  const {
-    select,
-    enabled = true,
-    fetch,
-    getData,
-  } = config;
+>(
+  config: UseAPIStore.UseQueryConfig<N, O, R>,
+  deps: any[] = []
+): UseAPIStore.UseQueryReturn<O, R> {
+  const { select, enabled = true, fetch, getData, getServerSnapshot } = config;
 
   const store = useStore();
-  const state = useStoreSelect(select, deps);
+  const state = useStoreSelect(select, deps, getServerSnapshot);
   const [result, setResult] = useState<R | null>(null);
   const [error, setError] = useState<any | null>(null);
   const [isFetching, setIsFetching] = useState(enabled);
@@ -30,31 +27,37 @@ export function useQuery<
   }, [config.enabled, ...deps]);
 
   async function refetch(...args: any[]) {
-    if (!fetch) throw new Error("You cannot call refetch without passing a fetch function to the hook.");
+    if (!fetch)
+      throw new Error(
+        "You cannot call refetch without passing a fetch function to the hook."
+      );
     try {
       setIsFetching(true);
       setError(null);
       const result = await fetch(...args);
-      const data = getData ? getData(result) : result as unknown as O;
+      const data = getData ? getData(result) : (result as unknown as O);
       store.mutate(data);
       setResult(result);
       return { result, data };
-    }
-    catch (error) {
+    } catch (error) {
       setError(error);
       setResult(null);
+    } finally {
+      setIsFetching(false);
     }
-    finally { setIsFetching(false); }
     return null;
   }
 
   if (config.throwError && error !== null) throw error;
 
-  return useMemo(() => ({
-    state,
-    result,
-    refetch,
-    isFetching,
-    error,
-  }), [isFetching, error, state, result])
+  return useMemo(
+    () => ({
+      state,
+      result,
+      refetch,
+      isFetching,
+      error,
+    }),
+    [isFetching, error, state, result]
+  );
 }

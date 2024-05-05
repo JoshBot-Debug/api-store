@@ -1,6 +1,6 @@
 {
   "name": "@jjmyers/api-store",
-  "version": "1.5.2",
+  "version": "1.5.3",
   "private": false,
   "type": "commonjs",
   "publishConfig": {

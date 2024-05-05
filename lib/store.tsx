@@ -20,7 +20,8 @@ export const useStoreSelect = <
   O extends Record<string, any> = Record<string, any>
 >(
   selector: ORS.SelectOptions<N, O>,
-  deps: any[] = []
+  deps: any[] = [],
+  getServerSnapshot: () => O[] = () => []
 ) => {
   const store = useContext(StoreContext);
 
@@ -32,7 +33,7 @@ export const useStoreSelect = <
   return useSyncExternalStore(
     store.subscribe,
     useCallback(() => store.select(selector), deps),
-    () => store.select(selector)
+    getServerSnapshot
   );
 };
 
@@ -48,7 +49,8 @@ export const useStoreIndex = <
       ORS.Replace<ORS.SelectOptions<N, O>, "where", (object: any) => boolean>
     >
   >,
-  deps: any[] = []
+  deps: any[] = [],
+  getServerSnapshot: () => O[] = () => []
 ) => {
   const store = useContext(StoreContext);
 
@@ -63,7 +65,7 @@ export const useStoreIndex = <
       () => store.selectIndex<I, N, O>(index, selector as any),
       [index, ...deps]
     ),
-    () => store.selectIndex<I, N, O>(index, selector as any)
+    getServerSnapshot
   );
 };
 
